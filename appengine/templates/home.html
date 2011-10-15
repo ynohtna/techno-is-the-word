@@ -1,0 +1,20 @@
+{# -*-Jinja2-*-  #}
+{% extends "base.html" %}
+
+{% block body %}
+<canvas id="canvas">
+  <p>Your browser needs to support HTML5 canvas for this, comrade.</p>
+  <p>Techno requires technology, you dig?</p>
+</canvas>
+{% endblock %}
+
+{% block footerScript %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="/js/jquery-1.6.4.min.js">\x3C/script>')</script>
+<script src="/js/techno.js"></script>
+<script>
+(function ($) {
+  $('#canvas').techno();
+}(jQuery));
+</script>
+{% endblock %}

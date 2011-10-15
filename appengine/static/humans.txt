@@ -1,0 +1,16 @@
+/* TEAM */
+  Developer: Anthony Bowyer-Lowe
+  Site: http://lowbroweye.com
+  Twitter: @lowbroweye
+  From: London, UK
+
+/* THANKS */
+  Host: Google AppEngine
+  Site: http://code.google.com/appengine/
+
+/* SITE */
+  Language: English
+  Doctype: HTML5
+  Standards: HTML5, CSS3
+  Components: Modernizr, jQuery
+  IDE: Emacs
