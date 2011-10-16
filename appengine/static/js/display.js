@@ -6,8 +6,9 @@ var TECHNO = (function (module, $) {
 	var defaults = {
 		chars_wide: 12,
 		min_lines: 4,
-		fg: '#fff',
-		bg: '#000'
+		fg: '#f28500',
+		hi: '#ffbf00',
+		bg: '#000000'
 	},
 	opts = {},
 
@@ -27,7 +28,7 @@ var TECHNO = (function (module, $) {
 	cur = 0,	// Cursor state: -1 off, 0/1 blink state.
 
 	// ========================================
-	// Font stuff.
+	// Font rendering.
 	scale_x = 1,
 	scale_y = 1,
 	rect_immediate = function (x, y, w, h) {
@@ -35,7 +36,18 @@ var TECHNO = (function (module, $) {
 					 w * scale_x, h * scale_y);
 	},
 	cmd_queue = [],
+	last_cmd = null,
+	exec_cmd = function () {
+		// Pop first cmd off queue.
+		// If last cmd was a stroke, restroke it with fg.
+		// If this cmd is a stroke then stroke it with hi.
+
+		// If queue not empty, set timeout for next execution
+		// with randomised duration around 50ms, tending towards
+		// shorter delays with longer queue lengths.
+	},
 	rect_deferred = function (x, y, w, h) {
+		//  If queue empty, start the stroke sequence.
 		cmd_queue.push({
 			cmd: 's',
 			x: cx_px + (x * scale_x),
@@ -45,6 +57,7 @@ var TECHNO = (function (module, $) {
 		});
 	},
 	// ========================================
+	// Font configuration.
 	font_cfg = {
 		width: 12,
 		space: 12,

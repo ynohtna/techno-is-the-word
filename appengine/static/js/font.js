@@ -34,6 +34,22 @@ var FONT = (function (module, $) {
 		';': ';',
 		'"': '"',
 		"'": "'",
+// *
+// $
+// £
+// @
+// €
+// ^
+// (
+// )
+// _
+// [
+// ]
+// |
+// \
+// /
+// :
+// ?
 
 		a: "Oh-",
 		b: "Ru-",
@@ -45,7 +61,7 @@ var FONT = (function (module, $) {
 		h: "Hh-",
 		i: "Ti",
 		j: "Jy",
-// K
+		k: 'Kh-',
 		l: "Ll",
 		m: "Mh",
 		n: "Oh",
@@ -58,7 +74,7 @@ var FONT = (function (module, $) {
 		u: "Hu",
 		v: "Hv",
 		w: "Hw",
-// X
+		x: "X",
 		y: "Hy<",
 		z: "Zz-"
 // 0
@@ -94,7 +110,7 @@ var FONT = (function (module, $) {
 		mth = cfg.midthick,
 		bth = cfg.botthick,
 		bhin = cfg.bothigh - bth,
-		k, l;
+		k, l, j;
 
 		switch (code) {
 		case '-':
@@ -157,6 +173,10 @@ var FONT = (function (module, $) {
 			cfg.rect(rx, topy, -sth, cfg.tophigh);
 			cfg.rect(rx - sth, topy, -sth, tth);
 			break;
+		case 'K':
+			cfg.rect(x, topy, sth, cfg.tophigh);
+			cfg.rect(rx - sth, topy, -sth, cfg.tophigh);
+			break;
 		case 'L':
 			cfg.rect(x, topy, sth, cfg.tophigh);
 			break;
@@ -179,6 +199,33 @@ var FONT = (function (module, $) {
 		case 'T':
 			cfg.rect(x, topy, cfg.width, tth);
 			cfg.rect(mx, topyin, sth, thin);
+			break;
+		case 'X':
+			cfg.rect(mx - (sth >> 1), midy, sth * 2, mth);
+			j = midy;
+			mx = x + (cfg.width >> 1);
+			k = 0;
+			l = sth + (sth >> 1);
+			while (--j >= topy & mx - k - l >= x) {
+				cfg.rect(mx - k, j, -l, 1);
+				cfg.rect(mx + k, j, l, 1);
+				++k;
+			}
+			if (j >= topy) {
+				cfg.rect(x, topy, sth, 1 + topy - j);
+				cfg.rect(rx, topy, -sth, 1 + topy - j);
+			}
+			j = midy + mth - 1;
+			k = 0;
+			while (++j <= y & mx - k - l >= x) {
+				cfg.rect(mx - k, j, -l, 1);
+				cfg.rect(mx + k, j, l, 1);
+				++k;
+			}
+			if (j <= y) {
+				cfg.rect(x, y, sth, j - y);
+				cfg.rect(rx, y, -sth, j - y);
+			}
 			break;
 		case 'Z':
 			cfg.rect(x, topy, cfg.width, tth);
