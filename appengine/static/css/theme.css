@@ -27,13 +27,13 @@ a:hover {
 #main {
 	position: absolute;
 	top: 0;
-	bottom: 2em;
+	bottom: 2.5em;
 	width: 100%;
 }
 
 footer {
 	position: absolute;
-	bottom: 0;
+	bottom: 0.5em;
 	width: 100%;
 	text-align: center;
 }
