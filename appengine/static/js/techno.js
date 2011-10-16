@@ -19,9 +19,6 @@
 		self = this.get,
 		opts = $.extend({}, defaults, options);
 
-		self.shout = function (what) {
-			TECHNO.print(what || opts.fg);
-		};
 		self.options = function () {
 			return opts;
 		};
@@ -29,8 +26,10 @@
 		// Initialise display module.
 		TECHNO.display_init(this.get(0), opts);
 
-		// Include font.
 		// Feed intro text to renderer.
+		TECHNO.print('----====----');
+		TECHNO.print('techno\nis the word');
+
 		// Receive input.
 		// Send input to server, instantiating communications channel.
 		// Receive updates over channel.

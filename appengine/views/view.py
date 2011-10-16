@@ -45,6 +45,8 @@ class Handler(webapp.RequestHandler):
             'version_id': config.SETTINGS['APP_VERSION_ID'],
             'on_dev': config.SETTINGS['ON_DEV'],
 
+            'now': datetime.datetime.utcnow().strftime('%Y%m%s%H%M%S'),
+
             'no_cache': no_cache
             }
 
