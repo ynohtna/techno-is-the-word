@@ -34,10 +34,15 @@ var TECHNO = (function (module, $) {
 		ctx.fillRect(cx_px + (x * scale_x), cy_py + (y * scale_y),
 					 w * scale_x, h * scale_y);
 	},
-	strokes = [],
+	cmd_queue = [],
 	rect_deferred = function (x, y, w, h) {
-		strokes.push(cx_px + (x * scale_x), cy_py + (y * scale_y),
-					 w * scale_x, h * scale_y);
+		cmd_queue.push({
+			cmd: 's',
+			x: cx_px + (x * scale_x),
+			y: cy_py + (y * scale_y),
+			w: w * scale_x,
+			h: h * scale_y
+		});
 	},
 	// ========================================
 	font_cfg = {
@@ -96,7 +101,7 @@ var TECHNO = (function (module, $) {
 		rows = Math.floor(cvsh / charh_px);
 
 		// Calculate horizontal inset for centering.
-		horiz_inset_px = (cvsw - (cols * charw_px)) / 2;
+		horiz_inset_px = Math.floor((cvsw - (cols * charw_px)) / 2);
 
 		// Re-display last lines of text.
 	},
@@ -113,8 +118,26 @@ var TECHNO = (function (module, $) {
 	},
 
 	// ========================================
-	print = function (msg) {
+	newline = function (fat) {
+		var offset = fat ? 2 : 1;
+		cy += offset
+		cx = 0;
+		if (cy >= rows) {
+			// TODO: Scroll lines up.
+			// Push scroll up command into queue.
+			cy -= offset;
+		}
+	},
+
+	print = function (msg, fat) {
 		var i, l, kar;
+
+		if (fat) {
+			scale_x *= 2;
+			scale_y *= 2;
+			charw_px *= 2;
+			charh_px *= 2;
+		}
 
 		// For each character in message,
 		// calculate and queue it's glyph strokes.
@@ -130,19 +153,23 @@ var TECHNO = (function (module, $) {
 
 			// Update cursor position.
 			if (kar == '\n') {
-				++cy;
-				cx = 0;
+				newline(fat);
 			} else {
 				++cx;
 				if (cx >= cols) {
-					++cy;
-					cx = 0;
+					newline(fat);
+					kar = '\n';
 				}
 			}
-			if (cy > rows) {
-				// TODO: Scroll lines up.
-				cy--;
-			}
+		}
+		if (kar != '\n') {
+			newline(fat);
+		}
+		if (fat) {
+			scale_x /= 2;
+			scale_y /= 2;
+			charw_px /= 2;
+			charh_px /= 2;
 		}
 	};
 

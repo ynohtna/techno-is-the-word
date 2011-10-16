@@ -16,19 +16,25 @@
 			fg: '#fff',
 			bg: '#000'
 		},
-		self = this.get,
-		opts = $.extend({}, defaults, options);
+		opts = $.extend({}, defaults, options),
+		self = this.get(0),
+
+		T = TECHNO;
 
 		self.options = function () {
 			return opts;
 		};
 
 		// Initialise display module.
-		TECHNO.display_init(this.get(0), opts);
+		T.display_init(self, opts);
 
 		// Feed intro text to renderer.
-		TECHNO.print('----====----');
-		TECHNO.print('techno\nis the word');
+		T.print('techno', true);
+		T.print('is the word!');
+		T.print('- == -- == -');
+		T.print('abcdefghijklmnopqrst,+\nuvwxyz\'"');
+		T.print('~<>{,.;!-=');
+
 
 		// Receive input.
 		// Send input to server, instantiating communications channel.

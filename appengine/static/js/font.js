@@ -21,6 +21,20 @@
 
 var FONT = (function (module, $) {
 	var glyphs = {
+		'~': '~',
+		'<': '<',
+		'>': '>',
+		'{': '{',
+		',': ',',
+		'.': '.',
+		'!': '!.',
+		'=': '=',
+		'+': '+',
+		'-': "-",
+		';': ';',
+		'"': '"',
+		"'": "'",
+
 		a: "Oh-",
 		b: "Ru-",
 		c: "El",
@@ -30,23 +44,23 @@ var FONT = (function (module, $) {
 		g: "Eu{",
 		h: "Hh-",
 		i: "Ti",
-// J
+		j: "Jy",
 // K
 		l: "Ll",
 		m: "Mh",
 		n: "Oh",
 		o: "Ou",
 		p: "Op>",
-// Q
+		q: "Ouq",
 		r: "Rh-",
 		s: "Ey<",
-		t: "T,",
+		t: "T;",
 		u: "Hu",
 		v: "Hv",
 		w: "Hw",
 // X
-		y: "Hy<"
-// Z
+		y: "Hy<",
+		z: "Zz-"
 // 0
 // 1
 // 2
@@ -86,6 +100,15 @@ var FONT = (function (module, $) {
 		case '-':
 			cfg.rect(x + sth, midy, cfg.width - (2 * sth), mth);
 			break;
+		case '=':
+			cfg.rect(x + sth, midy - mth, cfg.width - (2 * sth), mth);
+			cfg.rect(x + sth, midy + mth, cfg.width - (2 * sth), mth);
+			break;
+		case '+':
+			cfg.rect(x + sth, midy, cfg.width - (2 * sth), mth);
+			cfg.rect(mx, midy - thin, sth, thin);
+			cfg.rect(mx, midy + mth, sth, thin);
+			break;
 		case '<':
 			cfg.rect(x, midy, cfg.width - sth, mth);
 			break;
@@ -95,8 +118,25 @@ var FONT = (function (module, $) {
 		case '{':
 			cfg.rect(rx - (sth * 2), midy, sth, mth);
 			break;
-		case ',':
+		case ';':
 			cfg.rect(mx, midy, sth, cfg.bothigh);
+			break;
+		case ',':
+			cfg.rect(mx - sth, y - bth, sth, bth);
+			cfg.rect(mx, y - (bth * 2), sth, bth);
+			break;
+		case '.':
+			cfg.rect(mx, y - bth, sth, bth);
+			break;
+		case '!':
+			cfg.rect(mx, topy, sth, bhin + mth);
+			break;
+		case '"':
+			cfg.rect(mx - sth, topy, sth, tth * 2);
+			cfg.rect(mx + sth, topy, sth, tth * 2);
+			break;
+		case "'":
+			cfg.rect(mx, topy, sth, tth * 2);
 			break;
 		case 'D':
 			k = sth >> 1;
@@ -112,6 +152,10 @@ var FONT = (function (module, $) {
 		case 'H':
 			cfg.rect(x, topy, sth, cfg.tophigh);
 			cfg.rect(rx, topy, -sth, cfg.tophigh);
+			break;
+		case 'J':
+			cfg.rect(rx, topy, -sth, cfg.tophigh);
+			cfg.rect(rx - sth, topy, -sth, tth);
 			break;
 		case 'L':
 			cfg.rect(x, topy, sth, cfg.tophigh);
@@ -136,6 +180,10 @@ var FONT = (function (module, $) {
 			cfg.rect(x, topy, cfg.width, tth);
 			cfg.rect(mx, topyin, sth, thin);
 			break;
+		case 'Z':
+			cfg.rect(x, topy, cfg.width, tth);
+			cfg.rect(rx, topyin, -sth, thin);
+			break;
 		case 'h':
 			cfg.rect(x, midy, sth, cfg.bothigh);
 			cfg.rect(rx, midy, -sth, cfg.bothigh);
@@ -150,6 +198,9 @@ var FONT = (function (module, $) {
 			break;
 		case 'p':
 			cfg.rect(x, midy, sth, cfg.bothigh);
+			break;
+		case 'q':
+			cfg.rect(rx - (sth * 3), y - (bth * 2), sth, bth);
 			break;
 		case 'u':
 			cfg.rect(x, y, cfg.width, -bth);
@@ -186,6 +237,10 @@ var FONT = (function (module, $) {
 		case 'y':
 			cfg.rect(x, y, cfg.width, -bth);
 			cfg.rect(rx, midy, -sth, bhin);
+			break;
+		case 'z':
+			cfg.rect(x, y, cfg.width, -bth);
+			cfg.rect(x, midy + mth, sth, bhin - mth);
 			break;
 		case '~':
 			cfg.rect(x + sth, topyin, cfg.width - (2 * sth),
