@@ -36,18 +36,35 @@ var TECHNO = (function (module, $) {
 					 w * scale_x, h * scale_y);
 	},
 	cmd_queue = [],
+	cmd_timer = null,
 	last_cmd = null,
 	exec_cmd = function () {
 		// Pop first cmd off queue.
-		// If last cmd was a stroke, restroke it with fg.
-		// If this cmd is a stroke then stroke it with hi.
+		var cmd = cmd_queue.shift(),
+		timeout = 30;
 
-		// If queue not empty, set timeout for next execution
-		// with randomised duration around 50ms, tending towards
-		// shorter delays with longer queue lengths.
+		// If last cmd was a stroke, restroke it with fg.
+		if (last_cmd && last_cmd.cmd === 's') {
+			ctx.fillStyle = opts.fg;
+			ctx.fillRect(last_cmd.x, last_cmd.y, last_cmd.w, last_cmd.h);
+		}
+
+		// If this cmd is a stroke then stroke it with hi.
+		if (cmd && cmd.cmd === 's') {
+			ctx.fillStyle = opts.hi;
+			ctx.fillRect(cmd.x, cmd.y, cmd.w, cmd.h);
+			last_cmd = cmd;
+		}
+
+		// If queue not empty, set timeout for next execution.
+		if (cmd_queue.length || last_cmd) {
+			timeout = Math.min(7, timeout - (cmd_queue.length / 10));
+			cmd_timer = setTimeout(exec_cmd, timeout);
+		} else {
+			cmd_timer = null;
+		}
 	},
 	rect_deferred = function (x, y, w, h) {
-		//  If queue empty, start the stroke sequence.
 		cmd_queue.push({
 			cmd: 's',
 			x: cx_px + (x * scale_x),
@@ -55,6 +72,9 @@ var TECHNO = (function (module, $) {
 			w: w * scale_x,
 			h: h * scale_y
 		});
+		if (!cmd_timer) {
+			cmd_timer = setTimeout(exec_cmd, 10);
+		}
 	},
 	// ========================================
 	// Font configuration.
@@ -70,7 +90,7 @@ var TECHNO = (function (module, $) {
 		midthick: 2,
 		topthick: 2,
 
-		rect: rect_immediate
+		rect: rect_deferred
 	},
 	// Width and height of a character, originally at unity scaling.
 	charw_px = font_cfg.width + font_cfg.step,
