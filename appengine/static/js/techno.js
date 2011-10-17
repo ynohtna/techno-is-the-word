@@ -35,8 +35,9 @@
 		T.print('- == -- == -', { pauseline: true });
 		T.print('abcdefghijklmnopqrst,+\nuvwxyz\'"');
 		T.print('~<>{,.;!-=', { runon: true });
-		T.print('|', { alt: true });
-
+		T.print('|');
+		T.print('newline?', { pauseline: true });
+		T.print('word:', { alt: true });
 
 		// Receive input.
 		// Send input to server, instantiating communications channel.

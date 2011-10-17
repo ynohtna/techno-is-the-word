@@ -3,6 +3,8 @@
 "use strict";
 
 var TECHNO = (function (module, $) {
+	// ========================================
+	// Module setup.
 	var defaults = {
 		chars_wide: 12,
 		min_lines: 4,
@@ -14,12 +16,16 @@ var TECHNO = (function (module, $) {
 	},
 	opts = {},
 
+	// ========================================
+	// DOM interaction.
 	container = null,	// Canvas' parent container.
 	cvs = null,			// Canvas.
 	ctx = null,			// Canvas 2d context.
 	cvsw = 0,			// Canvas width in pixels.
 	cvsh = 0,			// Canvas height in pixels.
 
+	// ========================================
+	// Cursor state.
 	lines = [],	// Oldest to newest lines of text.
 	cols = 12,	// Number of columns on screen.
 	rows = 8,	// Rows that can be displayed on screen.
@@ -28,6 +34,30 @@ var TECHNO = (function (module, $) {
 	cx_px = 0,	// Cursor position in pixels.
 	cy_py = 0,	// 0, 0 is top left.
 	cur = 0,	// Cursor state: -1 off, 0/1 blink state.
+
+	// ========================================
+	// Font configuration.
+	font_cfg = {
+		width: 12,
+		space: 12,
+		step: 2,
+
+		bothigh: 7,
+		tophigh: 5,
+		sidethick: 2,
+		botthick: 2,
+		midthick: 2,
+		topthick: 2,
+
+		rect: null
+	},
+	// Width and height of a character, originally at unity scaling.
+	charw_px = font_cfg.width + font_cfg.step,
+	charh_px = font_cfg.bothigh + font_cfg.tophigh + font_cfg.step,
+	// Inset into the character grid, originally at unity scaling.
+	char_inset_px = font_cfg.step / 2,
+	// Horizontal inset for the character grid to be centred.
+	horiz_inset_px = 0,
 
 	// ========================================
 	// Font rendering.
@@ -44,8 +74,8 @@ var TECHNO = (function (module, $) {
 	exec_cmd = function () {
 		// Pop first cmd off queue.
 		var cmd = cmd_queue.shift(),
-		maxsleep = 30,
-		minsleep = 7,
+		maxsleep = 15,
+		minsleep = 3,
 		sleep = 10;
 
 		// If last cmd was a stroke, restroke it with fg.
@@ -63,18 +93,24 @@ var TECHNO = (function (module, $) {
 				ctx.fillStyle = opts.hi;
 				ctx.fillRect(cmd.x, cmd.y, cmd.w, cmd.h);
 			} else if (cmd.cmd === 'p') {
-				maxsleep *= 25;
-				minsleep *= 25;
-			} else if (cmd.cmd === 'pl') {
-				maxsleep *= 100;
-				minsleep *= 100;
+				maxsleep *= 20;
+				minsleep *= 20;
+			} else if (cmd.cmd === 'P') {
+				maxsleep *= 30;
+				minsleep *= 30;
+			} else if (cmd.cmd === '^') {
+				ctx.drawImage(cvs, 0, cmd.px, cvsw, cvsh - cmd.px,
+							  0, 0, cvsw, cvsh - cmd.px);
+				ctx.fillStyle = opts.bg;
+				ctx.fillRect(0, cvsh - cmd.px, cvsw, cmd.px);
+				maxsleep = minsleep = 1;
 			}
 			last_cmd = cmd;
 		}
 
 		// If queue not empty, set timeout for next execution.
 		if (cmd_queue.length || last_cmd) {
-			sleep = Math.min(minsleep, maxsleep - (cmd_queue.length / 10));
+			sleep = Math.max(minsleep, maxsleep - (cmd_queue.length / 10));
 			cmd_timer = setTimeout(exec_cmd, sleep);
 		} else {
 			clearInterval(cmd_timer);
@@ -101,35 +137,22 @@ var TECHNO = (function (module, $) {
 		});
 		kick_deferred();
 	},
-	pause_deferred = function (line) {
+	pause_deferred = function (long) {
 		cmd_queue.push({
-			cmd: line ? 'pl' : 'p'
+			cmd: long ? 'P' : 'p'
 		});
 		kick_deferred();
 	},
-	// ========================================
-	// Font configuration.
-	font_cfg = {
-		width: 12,
-		space: 12,
-		step: 2,
-
-		bothigh: 7,
-		tophigh: 5,
-		sidethick: 2,
-		botthick: 2,
-		midthick: 2,
-		topthick: 2,
-
-		rect: rect_deferred
+	scroll_deferred = function (pixels) {
+		var shift = charh_px >> 1;
+		while (pixels > 0) {
+			cmd_queue.push({
+				cmd: '^',
+				px: Math.min(pixels, shift)
+			});
+			pixels -= shift;
+		}
 	},
-	// Width and height of a character, originally at unity scaling.
-	charw_px = font_cfg.width + font_cfg.step,
-	charh_px = font_cfg.bothigh + font_cfg.tophigh + font_cfg.step,
-	// Inset into the character grid, originally at unity scaling.
-	char_inset_px = font_cfg.step / 2,
-	// Horizontal inset for the character grid to be centred.
-	horiz_inset_px = 0,
 
 	// ========================================
 	display_resized = function () {
@@ -177,16 +200,22 @@ var TECHNO = (function (module, $) {
 		container = $(cvs).parent();
 
 		display_resized();
+
+		font_cfg.rect = rect_deferred;
 	},
 
 	// ========================================
+	scroll = function (rows) {
+		rows = rows || 1;
+		scroll_deferred(rows * charh_px);
+	},
+
 	newline = function (pauseline, fat) {
 		var offset = fat ? 2 : 1;
 		cy += offset;
 		cx = 0;
 		if (cy >= rows) {
-			// TODO: Scroll lines up.
-			// Push scroll up command into queue.
+			scroll(offset);
 			cy -= offset;
 		}
 		if (pauseline) {
@@ -246,14 +275,14 @@ var TECHNO = (function (module, $) {
 		if (!runon && kar != '\n') {
 			newline(pauseline, fat);
 		}
+		if (alt) {
+			alt_colour = false;
+		}
 		if (fat) {
 			scale_x /= 2;
 			scale_y /= 2;
 			charw_px /= 2;
 			charh_px /= 2;
-		}
-		if (alt) {
-			alt_colour = false;
 		}
 	};
 
@@ -261,6 +290,9 @@ var TECHNO = (function (module, $) {
 	return $.extend(module, {
 		display_init: display_init,
 		display_resized: display_resized,
-		print: print
+
+		print: print,
+		newline: newline,
+		scroll: scroll
 	});
 }(TECHNO || {}, jQuery));

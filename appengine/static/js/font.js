@@ -35,6 +35,7 @@ var FONT = (function (module, $) {
 		'"': '"',
 		"'": "'",
 		'|': '|',
+		':': ':',
 // *
 // $
 // £
@@ -48,7 +49,6 @@ var FONT = (function (module, $) {
 // ]
 // \
 // /
-// :
 // ?
 
 		a: "Oh-",
@@ -131,6 +131,10 @@ var FONT = (function (module, $) {
 			break;
 		case '{':
 			cfg.rect(rx - (sth * 2), midy, sth, mth);
+			break;
+		case ':':
+			cfg.rect(mx - sth, midy - mth, sth, mth);
+			cfg.rect(mx - sth, midy + mth, sth, mth);
 			break;
 		case ';':
 			cfg.rect(mx, midy, sth, cfg.bothigh);
