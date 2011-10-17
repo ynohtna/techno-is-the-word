@@ -29,17 +29,17 @@
 		// Initialise display module.
 		T.display_init(self, opts);
 
-		// Feed intro text to renderer.
+		// Display intro text.
 		T.print('techno', { fat: true, alt: true, pausekar: true });
-		T.print('is the word!');
-		T.print('- == -- == -', { pauseline: true });
-		T.print('abcdefghijklmnopqrst,+\nuvwxyz\'"');
-		T.print('~<>{,.;!-=', { runon: true });
-		T.print('|');
-		T.print('newline?', { pauseline: true });
+		T.print('is the word!', { pauseline: true });
+		T.newline();
+		T.print('-+=~.::.~=+-', { pausekar: true });
+		T.newline();
 		T.print('word:', { alt: true });
 
-		// Receive input.
+		// Upon display complete event, start flashing cursor,
+		// receive input until enter.
+
 		// Send input to server, instantiating communications channel.
 		// Receive updates over channel.
 		// Receive final calculated data.

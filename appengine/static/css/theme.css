@@ -33,9 +33,11 @@ a:hover {
 
 footer {
 	position: absolute;
-	bottom: 0.5em;
+	bottom: 5px;
 	width: 100%;
 	text-align: center;
+	padding-top: 4px;
+	border-top: 1px solid #000;
 }
 
 canvas {
