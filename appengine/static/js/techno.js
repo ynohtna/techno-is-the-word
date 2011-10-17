@@ -19,23 +19,55 @@
 		},
 		opts = $.extend({}, defaults, options),
 		self = this.get(0),
+		$self = $(self),
 
-		T = TECHNO;
+		word ='',
+		T = TECHNO,
 
-		self.options = function () {
-			return opts;
+		// ----------------------------------------
+		punctuation_lookup = ':=,-.',
+
+		keydown = function (event) {
+			var key = event.which;
+
+			if (key === 13 && word != '') {	// Enter.
+				alert(word);
+				word = '';
+			} else if (key === 8) { // Backspace.
+				word = word.slice(0, -1);
+				console.log(word);
+			} else if (key === 32) { // Space.
+				word += ' ';
+				console.log(word);
+			} else if (key === 49 && event.shiftKey) { // Exclamation mark.
+				word += '!';
+				console.log(word);
+			} else if (key >= 186 && key <= 190) {	// Misc punctuation.
+				word += punctuation_lookup[key - 186];
+				console.log(word);
+			} else if (key >= 65 && key <= 90) {	// 
+				if (!event.metaKey) {
+					word += String.fromCharCode(key + 32);
+					console.log(word);
+				}
+			}
 		};
+
+		// ----------------------------------------
+		$self.bind('display', function (event, param) {
+			$(document).keydown(keydown);
+		});
+
 
 		// Initialise display module.
 		T.display_init(self, opts);
 
 		// Display intro text.
 		T.print('techno', { fat: true, alt: true, pausekar: true });
-		T.print('is the word!', { pauseline: true });
+		T.print('is the word!', { alt: true, pauseline: true });
+		T.print('~~~~----~~~~');
 		T.newline();
-		T.print('-+=~.::.~=+-', { pausekar: true });
-		T.newline();
-		T.print('word:', { alt: true });
+		T.print('word:', { event: 'display', params: 'start_input' });
 
 		// Upon display complete event, start flashing cursor,
 		// receive input until enter.

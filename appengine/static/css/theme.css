@@ -8,19 +8,19 @@ html, body {
 }
 
 body {
-	color: #b8dbba;
+	color: #474c46;
 	background-color: #171c16;
 }
 
 a,
 a:visited,
 a:active {
-	color: #c8ebca;
+	color: #575c56;
 	text-decoration: none;
 	border-bottom: 1px dashed #789b7a;
 }
 a:hover {
-	color: #d8fbda;
+	color: #676c66;
 	border-bottom: none;
 }
 
@@ -37,7 +37,8 @@ footer {
 	width: 100%;
 	text-align: center;
 	padding-top: 4px;
-	border-top: 1px solid #000;
+	background-color: #151a14;
+	border-top: 1px solid #111711;
 }
 
 canvas {

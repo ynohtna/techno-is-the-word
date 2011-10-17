@@ -83,6 +83,8 @@ var TECHNO = (function (module, $) {
 			if (last_cmd.cmd === 's') {
 				ctx.fillStyle = last_cmd.alt ? opts.alt : opts.fg;
 				ctx.fillRect(last_cmd.x, last_cmd.y, last_cmd.w, last_cmd.h);
+			} else if (last_cmd.cmd === 't') {
+				$(cvs).trigger(last_cmd.type, last_cmd.params);
 			}
 			last_cmd = null;
 		}
@@ -152,6 +154,13 @@ var TECHNO = (function (module, $) {
 			});
 			pixels -= shift;
 		}
+	},
+	event_deferred = function (type, params) {
+		cmd_queue.push({
+			cmd: 't',
+			type: type || 'display',
+			params: params || []
+		});
 	},
 
 	// ========================================
@@ -283,6 +292,9 @@ var TECHNO = (function (module, $) {
 			scale_y /= 2;
 			charw_px /= 2;
 			charh_px /= 2;
+		}
+		if (o && 'event' in o) {
+			event_deferred(o.event, 'params' in o ? o.params : []);
 		}
 	};
 
