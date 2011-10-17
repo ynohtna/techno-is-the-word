@@ -61,6 +61,7 @@ var TECHNO = (function (module, $) {
 			timeout = Math.min(7, timeout - (cmd_queue.length / 10));
 			cmd_timer = setTimeout(exec_cmd, timeout);
 		} else {
+			clearInterval(cmd_timer);
 			cmd_timer = null;
 		}
 	},
