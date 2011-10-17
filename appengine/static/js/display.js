@@ -32,7 +32,7 @@ var TECHNO = (function (module, $) {
 	cx = 0,		// Cursor position in characters.
 	cy = 0,		// 0,0 is top left.
 	cx_px = 0,	// Cursor position in pixels.
-	cy_py = 0,	// 0, 0 is top left.
+	cy_px = 0,	// 0, 0 is top left.
 	cur = 0,	// Cursor state: -1 off, 0/1 blink state.
 
 	// ========================================
@@ -60,110 +60,13 @@ var TECHNO = (function (module, $) {
 	horiz_inset_px = 0,
 
 	// ========================================
-	// Font rendering.
+	// Display state.
 	scale_x = 1,
 	scale_y = 1,
 	alt_colour = false,
-	rect_immediate = function (x, y, w, h) {
-		ctx.fillRect(cx_px + (x * scale_x), cy_py + (y * scale_y),
-					 w * scale_x, h * scale_y);
-	},
-	cmd_queue = [],
-	cmd_timer = null,
-	last_cmd = null,
-	exec_cmd = function () {
-		// Pop first cmd off queue.
-		var cmd = cmd_queue.shift(),
-		maxsleep = 15,
-		minsleep = 3,
-		sleep = 10;
-
-		// If last cmd was a stroke, restroke it with fg.
-		if (last_cmd) {
-			if (last_cmd.cmd === 's') {
-				ctx.fillStyle = last_cmd.alt ? opts.alt : opts.fg;
-				ctx.fillRect(last_cmd.x, last_cmd.y, last_cmd.w, last_cmd.h);
-			} else if (last_cmd.cmd === 't') {
-				$(cvs).trigger(last_cmd.type, last_cmd.params);
-			}
-			last_cmd = null;
-		}
-
-		// If this cmd is a stroke then stroke it with hi.
-		if (cmd) {
-			if (cmd.cmd === 's') {
-				ctx.fillStyle = opts.hi;
-				ctx.fillRect(cmd.x, cmd.y, cmd.w, cmd.h);
-			} else if (cmd.cmd === 'p') {
-				maxsleep *= 20;
-				minsleep *= 20;
-			} else if (cmd.cmd === 'P') {
-				maxsleep *= 30;
-				minsleep *= 30;
-			} else if (cmd.cmd === '^') {
-				ctx.drawImage(cvs, 0, cmd.px, cvsw, cvsh - cmd.px,
-							  0, 0, cvsw, cvsh - cmd.px);
-				ctx.fillStyle = opts.bg;
-				ctx.fillRect(0, cvsh - cmd.px, cvsw, cmd.px);
-				maxsleep = minsleep = 1;
-			}
-			last_cmd = cmd;
-		}
-
-		// If queue not empty, set timeout for next execution.
-		if (cmd_queue.length || last_cmd) {
-			sleep = Math.max(minsleep, maxsleep - (cmd_queue.length / 10));
-			cmd_timer = setTimeout(exec_cmd, sleep);
-		} else {
-			clearInterval(cmd_timer);
-			cmd_timer = null;
-		}
-	},
-	kick_deferred = function () {
-		if (!cmd_timer) {
-			var startdelay = 10;
-			if (last_cmd && last_cmd.cmd === 'p') {
-				startdelay = 200;
-			}
-			cmd_timer = setTimeout(exec_cmd, startdelay);
-		}
-	},
-	rect_deferred = function (x, y, w, h) {
-		cmd_queue.push({
-			cmd: 's',
-			alt: alt_colour,
-			x: cx_px + (x * scale_x),
-			y: cy_py + (y * scale_y),
-			w: w * scale_x,
-			h: h * scale_y
-		});
-		kick_deferred();
-	},
-	pause_deferred = function (long) {
-		cmd_queue.push({
-			cmd: long ? 'P' : 'p'
-		});
-		kick_deferred();
-	},
-	scroll_deferred = function (pixels) {
-		var shift = charh_px >> 1;
-		while (pixels > 0) {
-			cmd_queue.push({
-				cmd: '^',
-				px: Math.min(pixels, shift)
-			});
-			pixels -= shift;
-		}
-	},
-	event_deferred = function (type, params) {
-		cmd_queue.push({
-			cmd: 't',
-			type: type || 'display',
-			params: params || []
-		});
-	},
 
 	// ========================================
+	// Initialization.
 	display_resized = function () {
 		// Determine size of canvas.
 		if (!ctx) {
@@ -203,6 +106,7 @@ var TECHNO = (function (module, $) {
 	},
 	display_init = function (canvas, options) {
 		$.extend(opts, defaults, options);
+		cols = opts.chars_wide;
 
 		cvs = canvas;
 		ctx = canvas.getContext('2d');
@@ -213,28 +117,177 @@ var TECHNO = (function (module, $) {
 		font_cfg.rect = rect_deferred;
 	},
 
-	// ========================================
-	scroll = function (rows) {
-		rows = rows || 1;
-		scroll_deferred(rows * charh_px);
+	calc_px_pos = function () {
+		cx_px = (cx * charw_px) + char_inset_px + horiz_inset_px;
+		cy_px = ((cy + 1) * charh_px) - char_inset_px;
 	},
 
-	newline = function (pauseline, fat) {
-		var offset = fat ? 2 : 1;
+	// ========================================
+	// Display manipulators.
+	rect_immediate = function (x, y, w, h) {
+		ctx.fillStyle = alt_colour ? opts.alt : opts.fg;
+		ctx.fillRect(cx_px + (x * scale_x), cy_px + (y * scale_y),
+					 w * scale_x, h * scale_y);
+	},
+	scroll_now = function (px) {
+		ctx.drawImage(cvs, 0, px, cvsw, cvsh - px,
+					  0, 0, cvsw, cvsh - px);
+		ctx.fillStyle = opts.bg;
+		ctx.fillRect(0, cvsh - px, cvsw, px);
+	},
+	clear_line = function () {
+		ctx.fillStyle = opts.bg;
+		ctx.fillRect(cx_px, cy_px, cvsw - cx_px, -charh_px);
+	},
+
+	// ========================================
+	// Display commands handlers.
+	cmd_queue = [],
+	cmd_timer = null,
+	last_cmd = null,
+	exec_cmd = function () {
+		// Pop first cmd off queue.
+		var cmd = cmd_queue.shift(),
+		maxsleep = 15,
+		minsleep = 3,
+		sleep = 10;
+
+		// If last cmd was a stroke, restroke it with fg.
+		if (last_cmd) {
+			if (last_cmd.cmd === 's') {
+				ctx.fillStyle = last_cmd.alt ? opts.alt : opts.fg;
+				ctx.fillRect(last_cmd.x, last_cmd.y, last_cmd.w, last_cmd.h);
+			} else if (last_cmd.cmd === 't') {
+				$(cvs).trigger(last_cmd.type, last_cmd.params);
+			} else if (last_cmd.cmd === 'c') {
+				clear_line();
+			}
+			last_cmd = null;
+		}
+
+		// If this cmd is a stroke then stroke it with hi.
+		if (cmd) {
+			if (cmd.cmd === 's') {
+				ctx.fillStyle = opts.hi;
+				ctx.fillRect(cmd.x, cmd.y, cmd.w, cmd.h);
+			} else if (cmd.cmd === 'p') {
+				maxsleep *= 20;
+				minsleep *= 20;
+			} else if (cmd.cmd === 'P') {
+				maxsleep *= 30;
+				minsleep *= 30;
+			} else if (cmd.cmd === '^') {
+				scroll_now(cmd.px);
+				maxsleep = minsleep = 1;
+			} else if (cmd.cmd === 't') {
+				// Intentionally empty: event triggers are sent via last cmd.
+			} else if (cmd.cmd === 'c') {
+				// Intentionally empty: line clear is handled by last cmd.
+			}
+			last_cmd = cmd;
+		}
+
+		// If queue not empty, set timeout for next execution.
+		if (cmd_queue.length || last_cmd) {
+			sleep = Math.max(minsleep, maxsleep - (cmd_queue.length / 10));
+			cmd_timer = setTimeout(exec_cmd, sleep);
+		} else {
+			clearInterval(cmd_timer);
+			cmd_timer = null;
+		}
+	},
+	start_deferred = function () {
+		if (!cmd_timer) {
+			var startdelay = 10;
+			if (last_cmd && last_cmd.cmd === 'p') {
+				startdelay = 200;
+			}
+			cmd_timer = setTimeout(exec_cmd, startdelay);
+		}
+	},
+	rect_deferred = function (x, y, w, h) {
+		cmd_queue.push({
+			cmd: 's',
+			alt: alt_colour,
+			x: cx_px + (x * scale_x),
+			y: cy_px + (y * scale_y),
+			w: w * scale_x,
+			h: h * scale_y
+		});
+		start_deferred();
+	},
+	do_pause = function (long) {
+		cmd_queue.push({
+			cmd: long ? 'P' : 'p'
+		});
+		start_deferred();
+	},
+	do_scroll = function (pixels, o) {
+		var shift = charh_px >> 1;
+		if (o && 'immediate' in o && o.immediate) {
+			scroll_now(pixels);
+		} else {
+			while (pixels > 0) {
+				cmd_queue.push({
+					cmd: '^',
+					px: Math.min(pixels, shift)
+				});
+				pixels -= shift;
+			}
+			start_deferred();
+		}
+	},
+	do_event = function (type, o) {
+		var params = (o && 'params' in o) ? o.params : [];
+		if (o && 'immediate' in o && o.immediate) {
+			$(cvs).trigger(type || 'display', params);
+		} else {
+			cmd_queue.push({
+				cmd: 't',
+				type: type || 'display',
+				params: params
+			});
+			start_deferred();
+		}
+	},
+	do_clear = function (o) {
+		if (o && 'immediate' in o && o.immediate) {
+			clear_line();
+		} else {
+			cmd_queue.push({
+				cmd: 'c'
+			});
+			start_deferred();
+		}
+	},
+
+	// ========================================
+	scroll = function (rows, o) {
+		rows = rows || 1;
+		do_scroll(rows * charh_px, o);
+	},
+
+	newline = function (o) {
+		var offset = (o && 'fat' in o && o.fat) ? 2 : 1,
+		pauseline = o && 'pauseline' in o && o.pauseline,
+		immed = o && 'immediate' in o && o.immediate;
+
 		cy += offset;
 		cx = 0;
 		if (cy >= rows) {
-			scroll(offset);
+			scroll(offset, o);
 			cy -= offset;
 		}
-		if (pauseline) {
-			pause_deferred(true);
+		calc_px_pos();
+		if (pauseline && !immed) {
+			do_pause(true);
 		}
 	},
 
 	print = function (msg, o) {
 		var i, l, kar,
-		fat, alt, pausekar, pauseline, runon;
+		fat, alt, pausekar, pauseline, runon,
+		event, immed, cr, clr;
 
 		if (o) {
 			fat = 'fat' in o && o.fat;
@@ -242,6 +295,10 @@ var TECHNO = (function (module, $) {
 			pausekar = 'pausekar' in o && o.pausekar;
 			pauseline = 'pauseline' in o && o.pauseline;
 			runon = 'runon' in o && o.runon;
+			event = 'event' in o && o.event;
+			immed = 'immediate' in o && o.immediate;
+			cr = 'carriage_return' in o && o.carriage_return;
+			clr = 'clear_line' in o && o.clear_line;
 		}
 
 		if (fat) {
@@ -255,34 +312,47 @@ var TECHNO = (function (module, $) {
 			alt_colour = true;
 		}
 
+		if (immed) {
+			font_cfg.rect = rect_immediate;
+		}
+
+		if (cr) {
+			cx = 0;
+		} else if (cx >= cols) {
+			newline(o);
+		}
+
+		calc_px_pos();
+
+		if (clr) {
+			do_clear(o);
+		}
+
 		// For each character in message,
 		// calculate and queue it's glyph strokes.
 		for(i = 0, l = msg.length; i < l; ++i) {
 			kar = msg[i];
 
 			if (kar != ' ' && kar != '\n') {
-				cx_px = (cx * charw_px) + char_inset_px + horiz_inset_px;
-				cy_py = ((cy + 1) * charh_px) - char_inset_px;
-
 				FONT.render(font_cfg, 0, 0, kar);
-				if (pausekar) {
-					pause_deferred();
+				if (pausekar && !immed) {
+					do_pause();
 				}
 			}
 
 			// Update cursor position.
 			if (kar == '\n') {
-				newline(pauseline, fat);
+				newline(o);
 			} else {
 				++cx;
-				if (cx >= cols) {
-					newline(pauseline, fat);
-					kar = '\n';
-				}
+				cx_px += charw_px;
 			}
 		}
+		if (immed) {
+			font_cfg.rect = rect_deferred;
+		}
 		if (!runon && kar != '\n') {
-			newline(pauseline, fat);
+			newline(o);
 		}
 		if (alt) {
 			alt_colour = false;
@@ -293,8 +363,8 @@ var TECHNO = (function (module, $) {
 			charw_px /= 2;
 			charh_px /= 2;
 		}
-		if (o && 'event' in o) {
-			event_deferred(o.event, 'params' in o ? o.params : []);
+		if (event) {
+			do_event(event, o);
 		}
 	};
 

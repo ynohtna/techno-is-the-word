@@ -13,6 +13,8 @@
 		}
 
 		var defaults = {
+			chars_wide: 12,
+
 			fg: '#fff',
 			bg: '#000',
 			alt: '#ff0'
@@ -26,6 +28,23 @@
 
 		// ----------------------------------------
 		punctuation_lookup = ':=,-.',
+		input_opts = {
+			alt: true,
+			carriage_return: true,
+			clear_line: true,
+			runon: true,
+			immediate: true
+			cursor: true
+		},
+
+		word_changed = function () {
+			// Slice out displayable portion of word.
+			var slice = word.slice(-12);
+			console.log('word: ' + slice);
+
+			// Clear line and show slice.
+			T.print(slice, input_opts);
+		},
 
 		keydown = function (event) {
 			var key = event.which;
@@ -35,20 +54,20 @@
 				word = '';
 			} else if (key === 8) { // Backspace.
 				word = word.slice(0, -1);
-				console.log(word);
+				word_changed();
 			} else if (key === 32) { // Space.
 				word += ' ';
-				console.log(word);
-			} else if (key === 49 && event.shiftKey) { // Exclamation mark.
+				word_changed();
+			} else if (key === 49 && event.shiftKey) {	// Exclamation mark.
 				word += '!';
-				console.log(word);
-			} else if (key >= 186 && key <= 190) {	// Misc punctuation.
+				word_changed();
+			} else if (key >= 186 && key <= 190) {		// Misc punctuation.
 				word += punctuation_lookup[key - 186];
-				console.log(word);
-			} else if (key >= 65 && key <= 90) {	// 
+				word_changed();
+			} else if (key >= 65 && key <= 90) {		// Alphabetic character.
 				if (!event.metaKey) {
 					word += String.fromCharCode(key + 32);
-					console.log(word);
+					word_changed();
 				}
 			}
 		};
