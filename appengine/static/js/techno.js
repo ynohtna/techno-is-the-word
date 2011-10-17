@@ -14,7 +14,8 @@
 
 		var defaults = {
 			fg: '#fff',
-			bg: '#000'
+			bg: '#000',
+			alt: '#ff0'
 		},
 		opts = $.extend({}, defaults, options),
 		self = this.get(0),
@@ -29,11 +30,12 @@
 		T.display_init(self, opts);
 
 		// Feed intro text to renderer.
-		T.print('techno', true);
+		T.print('techno', { fat: true, alt: true, pausekar: true });
 		T.print('is the word!');
-		T.print('- == -- == -');
+		T.print('- == -- == -', { pauseline: true });
 		T.print('abcdefghijklmnopqrst,+\nuvwxyz\'"');
-		T.print('~<>{,.;!-=');
+		T.print('~<>{,.;!-=', { runon: true });
+		T.print('|', { alt: true });
 
 
 		// Receive input.

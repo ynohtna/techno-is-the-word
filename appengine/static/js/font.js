@@ -34,6 +34,7 @@ var FONT = (function (module, $) {
 		';': ';',
 		'"': '"',
 		"'": "'",
+		'|': '|',
 // *
 // $
 // £
@@ -45,7 +46,6 @@ var FONT = (function (module, $) {
 // _
 // [
 // ]
-// |
 // \
 // /
 // :
@@ -87,8 +87,6 @@ var FONT = (function (module, $) {
 // 7
 // 8
 // 9
-// -
-// _
 	},
 	measure = function (cfg, text) {
 		var sum = 0, l = text.length, i = 0;
@@ -154,6 +152,10 @@ var FONT = (function (module, $) {
 		case "'":
 			cfg.rect(mx, topy, sth, tth * 2);
 			break;
+		case "|":
+			cfg.rect(mx, topy, sth, cfg.bothigh + cfg.tophigh);
+			break;
+		// ----------------------------------------
 		case 'D':
 			k = sth >> 1;
 			l = tth >> 1;
@@ -231,6 +233,7 @@ var FONT = (function (module, $) {
 			cfg.rect(x, topy, cfg.width, tth);
 			cfg.rect(rx, topyin, -sth, thin);
 			break;
+		// ----------------------------------------
 		case 'h':
 			cfg.rect(x, midy, sth, cfg.bothigh);
 			cfg.rect(rx, midy, -sth, cfg.bothigh);
@@ -289,12 +292,14 @@ var FONT = (function (module, $) {
 			cfg.rect(x, y, cfg.width, -bth);
 			cfg.rect(x, midy + mth, sth, bhin - mth);
 			break;
+		// ----------------------------------------
+		// Square inset block, shown for unrecognised characters.
 		case '~':
 			cfg.rect(x + sth, topyin, cfg.width - (2 * sth),
 					 cfg.tophigh + cfg.bothigh - cfg.topthick - cfg.botthick);
 			break;
 		default:
-//			console.warn('Unknown font code ' + code);
+//			console.warn('Unknown glyph code ' + code);
 			break;
 		}
 	},

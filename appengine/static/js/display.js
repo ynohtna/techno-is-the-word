@@ -6,9 +6,11 @@ var TECHNO = (function (module, $) {
 	var defaults = {
 		chars_wide: 12,
 		min_lines: 4,
+
 		fg: '#f28500',
 		hi: '#ffbf00',
-		bg: '#000000'
+		bg: '#000000',
+		alt: '#85f200'
 	},
 	opts = {},
 
@@ -31,6 +33,7 @@ var TECHNO = (function (module, $) {
 	// Font rendering.
 	scale_x = 1,
 	scale_y = 1,
+	alt_colour = false,
 	rect_immediate = function (x, y, w, h) {
 		ctx.fillRect(cx_px + (x * scale_x), cy_py + (y * scale_y),
 					 w * scale_x, h * scale_y);
@@ -41,41 +44,68 @@ var TECHNO = (function (module, $) {
 	exec_cmd = function () {
 		// Pop first cmd off queue.
 		var cmd = cmd_queue.shift(),
-		timeout = 30;
+		maxsleep = 30,
+		minsleep = 7,
+		sleep = 10;
 
 		// If last cmd was a stroke, restroke it with fg.
-		if (last_cmd && last_cmd.cmd === 's') {
-			ctx.fillStyle = opts.fg;
-			ctx.fillRect(last_cmd.x, last_cmd.y, last_cmd.w, last_cmd.h);
+		if (last_cmd) {
+			if (last_cmd.cmd === 's') {
+				ctx.fillStyle = last_cmd.alt ? opts.alt : opts.fg;
+				ctx.fillRect(last_cmd.x, last_cmd.y, last_cmd.w, last_cmd.h);
+			}
+			last_cmd = null;
 		}
 
 		// If this cmd is a stroke then stroke it with hi.
-		if (cmd && cmd.cmd === 's') {
-			ctx.fillStyle = opts.hi;
-			ctx.fillRect(cmd.x, cmd.y, cmd.w, cmd.h);
+		if (cmd) {
+			if (cmd.cmd === 's') {
+				ctx.fillStyle = opts.hi;
+				ctx.fillRect(cmd.x, cmd.y, cmd.w, cmd.h);
+			} else if (cmd.cmd === 'p') {
+				maxsleep *= 25;
+				minsleep *= 25;
+			} else if (cmd.cmd === 'pl') {
+				maxsleep *= 100;
+				minsleep *= 100;
+			}
 			last_cmd = cmd;
 		}
 
 		// If queue not empty, set timeout for next execution.
 		if (cmd_queue.length || last_cmd) {
-			timeout = Math.min(7, timeout - (cmd_queue.length / 10));
-			cmd_timer = setTimeout(exec_cmd, timeout);
+			sleep = Math.min(minsleep, maxsleep - (cmd_queue.length / 10));
+			cmd_timer = setTimeout(exec_cmd, sleep);
 		} else {
 			clearInterval(cmd_timer);
 			cmd_timer = null;
 		}
 	},
+	kick_deferred = function () {
+		if (!cmd_timer) {
+			var startdelay = 10;
+			if (last_cmd && last_cmd.cmd === 'p') {
+				startdelay = 200;
+			}
+			cmd_timer = setTimeout(exec_cmd, startdelay);
+		}
+	},
 	rect_deferred = function (x, y, w, h) {
 		cmd_queue.push({
 			cmd: 's',
+			alt: alt_colour,
 			x: cx_px + (x * scale_x),
 			y: cy_py + (y * scale_y),
 			w: w * scale_x,
 			h: h * scale_y
 		});
-		if (!cmd_timer) {
-			cmd_timer = setTimeout(exec_cmd, 10);
-		}
+		kick_deferred();
+	},
+	pause_deferred = function (line) {
+		cmd_queue.push({
+			cmd: line ? 'pl' : 'p'
+		});
+		kick_deferred();
 	},
 	// ========================================
 	// Font configuration.
@@ -137,7 +167,7 @@ var TECHNO = (function (module, $) {
 		// Calculate horizontal inset for centering.
 		horiz_inset_px = Math.floor((cvsw - (cols * charw_px)) / 2);
 
-		// Re-display last lines of text.
+		// Re-display last lines of text?
 	},
 	display_init = function (canvas, options) {
 		$.extend(opts, defaults, options);
@@ -147,30 +177,44 @@ var TECHNO = (function (module, $) {
 		container = $(cvs).parent();
 
 		display_resized();
-
-		// Hook up resize detection.
 	},
 
 	// ========================================
-	newline = function (fat) {
+	newline = function (pauseline, fat) {
 		var offset = fat ? 2 : 1;
-		cy += offset
+		cy += offset;
 		cx = 0;
 		if (cy >= rows) {
 			// TODO: Scroll lines up.
 			// Push scroll up command into queue.
 			cy -= offset;
 		}
+		if (pauseline) {
+			pause_deferred(true);
+		}
 	},
 
-	print = function (msg, fat) {
-		var i, l, kar;
+	print = function (msg, o) {
+		var i, l, kar,
+		fat, alt, pausekar, pauseline, runon;
+
+		if (o) {
+			fat = 'fat' in o && o.fat;
+			alt = 'alt' in o && o.alt;
+			pausekar = 'pausekar' in o && o.pausekar;
+			pauseline = 'pauseline' in o && o.pauseline;
+			runon = 'runon' in o && o.runon;
+		}
 
 		if (fat) {
 			scale_x *= 2;
 			scale_y *= 2;
 			charw_px *= 2;
 			charh_px *= 2;
+		}
+
+		if (alt) {
+			alt_colour = true;
 		}
 
 		// For each character in message,
@@ -183,27 +227,33 @@ var TECHNO = (function (module, $) {
 				cy_py = ((cy + 1) * charh_px) - char_inset_px;
 
 				FONT.render(font_cfg, 0, 0, kar);
+				if (pausekar) {
+					pause_deferred();
+				}
 			}
 
 			// Update cursor position.
 			if (kar == '\n') {
-				newline(fat);
+				newline(pauseline, fat);
 			} else {
 				++cx;
 				if (cx >= cols) {
-					newline(fat);
+					newline(pauseline, fat);
 					kar = '\n';
 				}
 			}
 		}
-		if (kar != '\n') {
-			newline(fat);
+		if (!runon && kar != '\n') {
+			newline(pauseline, fat);
 		}
 		if (fat) {
 			scale_x /= 2;
 			scale_y /= 2;
 			charw_px /= 2;
 			charh_px /= 2;
+		}
+		if (alt) {
+			alt_colour = false;
 		}
 	};
 
