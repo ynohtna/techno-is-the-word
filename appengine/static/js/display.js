@@ -224,8 +224,10 @@ var TECHNO = (function (module, $) {
 	},
 	show_cursor = function (show) {
 		if (show) {
+			cur = 1;
 			start_deferred();
 		} else {
+			cur = -1;
 			draw_cursor(false);
 		}
 	},
@@ -351,14 +353,14 @@ var TECHNO = (function (module, $) {
 
 		if (clr) {
 			do_clear(o);
-		} else if (cursor && immed) {
-			// Erase cursor and disable it during rendering.
-			show_cursor(false);
 		}
+
+		// Erase cursor and disable it during rendering.
+		show_cursor(false);
 
 		// For each character in message,
 		// calculate and queue it's glyph strokes.
-		for(i = 0, l = msg.length; i < l; ++i) {
+		for(i = 0, l = msg ? msg.length : 0; i < l; ++i) {
 			kar = msg[i];
 
 			if (kar != ' ' && kar != '\n') {
