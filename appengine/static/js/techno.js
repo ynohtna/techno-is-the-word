@@ -33,7 +33,7 @@
 			carriage_return: true,
 			clear_line: true,
 			runon: true,
-			immediate: true
+			immediate: true,
 			cursor: true
 		},
 
@@ -50,11 +50,13 @@
 			var key = event.which;
 
 			if (key === 13 && word != '') {	// Enter.
-				alert(word);
+				// Send word, enter server feedback state.
 				word = '';
+				word_changed();
 			} else if (key === 8) { // Backspace.
 				word = word.slice(0, -1);
 				word_changed();
+				event.preventDefault();	// Don't go to previous page!
 			} else if (key === 32) { // Space.
 				word += ' ';
 				word_changed();
@@ -75,6 +77,7 @@
 		// ----------------------------------------
 		$self.bind('display', function (event, param) {
 			$(document).keydown(keydown);
+			T.show_cursor(true);
 		});
 
 

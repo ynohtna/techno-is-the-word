@@ -1,5 +1,5 @@
 /*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4 */
-/*global jQuery, TECHNO, FONT */
+/*global jQuery, setTimeout, TECHNO, FONT */
 "use strict";
 
 var TECHNO = (function (module, $) {
@@ -12,7 +12,10 @@ var TECHNO = (function (module, $) {
 		fg: '#f28500',
 		hi: '#ffbf00',
 		bg: '#000000',
-		alt: '#85f200'
+		alt: '#85f200',
+		cur: '#00f285',
+
+		cur_ms: 100
 	},
 	opts = {},
 
@@ -26,14 +29,14 @@ var TECHNO = (function (module, $) {
 
 	// ========================================
 	// Cursor state.
-	lines = [],	// Oldest to newest lines of text.
 	cols = 12,	// Number of columns on screen.
 	rows = 8,	// Rows that can be displayed on screen.
 	cx = 0,		// Cursor position in characters.
 	cy = 0,		// 0,0 is top left.
 	cx_px = 0,	// Cursor position in pixels.
 	cy_px = 0,	// 0, 0 is top left.
-	cur = 0,	// Cursor state: -1 off, 0/1 blink state.
+	cur = 0,	// Cursor blink state: 0, 1.
+	curx = 0,
 
 	// ========================================
 	// Font configuration.
@@ -139,6 +142,13 @@ var TECHNO = (function (module, $) {
 		ctx.fillStyle = opts.bg;
 		ctx.fillRect(cx_px, cy_px, cvsw - cx_px, -charh_px);
 	},
+	draw_cursor = function (on) {
+		var w = font_cfg.step * scale_x;
+		curx = cx_px - (cx > 0 ? w : 0);
+		ctx.fillStyle = (on && cur) ? opts.cur : opts.bg;
+		ctx.fillRect(curx, cy_px, w, -charh_px >> 1);
+		cur = 1 - cur;
+	},
 
 	// ========================================
 	// Display commands handlers.
@@ -151,6 +161,10 @@ var TECHNO = (function (module, $) {
 		maxsleep = 15,
 		minsleep = 3,
 		sleep = 10;
+
+		if ((cmd || last_cmd) && cur >= 0) {
+			draw_cursor(false);
+		}
 
 		// If last cmd was a stroke, restroke it with fg.
 		if (last_cmd) {
@@ -185,10 +199,13 @@ var TECHNO = (function (module, $) {
 				// Intentionally empty: line clear is handled by last cmd.
 			}
 			last_cmd = cmd;
+		} else if (!last_cmd && cur >= 0){
+			maxsleep = opts.cur_ms;
+			draw_cursor(true);
 		}
 
 		// If queue not empty, set timeout for next execution.
-		if (cmd_queue.length || last_cmd) {
+		if (cmd_queue.length || last_cmd || cur >= 0) {
 			sleep = Math.max(minsleep, maxsleep - (cmd_queue.length / 10));
 			cmd_timer = setTimeout(exec_cmd, sleep);
 		} else {
@@ -203,6 +220,13 @@ var TECHNO = (function (module, $) {
 				startdelay = 200;
 			}
 			cmd_timer = setTimeout(exec_cmd, startdelay);
+		}
+	},
+	show_cursor = function (show) {
+		if (show) {
+			start_deferred();
+		} else {
+			draw_cursor(false);
 		}
 	},
 	rect_deferred = function (x, y, w, h) {
@@ -287,7 +311,7 @@ var TECHNO = (function (module, $) {
 	print = function (msg, o) {
 		var i, l, kar,
 		fat, alt, pausekar, pauseline, runon,
-		event, immed, cr, clr;
+		event, immed, cr, clr, cursor;
 
 		if (o) {
 			fat = 'fat' in o && o.fat;
@@ -299,6 +323,7 @@ var TECHNO = (function (module, $) {
 			immed = 'immediate' in o && o.immediate;
 			cr = 'carriage_return' in o && o.carriage_return;
 			clr = 'clear_line' in o && o.clear_line;
+			cursor = 'cursor' in o && o.cursor;
 		}
 
 		if (fat) {
@@ -326,6 +351,9 @@ var TECHNO = (function (module, $) {
 
 		if (clr) {
 			do_clear(o);
+		} else if (cursor && immed) {
+			// Erase cursor and disable it during rendering.
+			show_cursor(false);
 		}
 
 		// For each character in message,
@@ -366,6 +394,9 @@ var TECHNO = (function (module, $) {
 		if (event) {
 			do_event(event, o);
 		}
+		if (cursor) {
+			show_cursor(true);
+		}
 	};
 
 	// ========================================
@@ -375,6 +406,8 @@ var TECHNO = (function (module, $) {
 
 		print: print,
 		newline: newline,
-		scroll: scroll
+		scroll: scroll,
+
+		show_cursor: show_cursor
 	});
 }(TECHNO || {}, jQuery));
