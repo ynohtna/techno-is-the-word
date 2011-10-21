@@ -173,8 +173,6 @@ var TECHNO = (function (module, $) {
 				ctx.fillRect(last_cmd.x, last_cmd.y, last_cmd.w, last_cmd.h);
 			} else if (last_cmd.cmd === 't') {
 				$(cvs).trigger(last_cmd.type, last_cmd.params);
-			} else if (last_cmd.cmd === 'c') {
-				clear_line();
 			}
 			last_cmd = null;
 		}
@@ -188,15 +186,15 @@ var TECHNO = (function (module, $) {
 				maxsleep *= 20;
 				minsleep *= 20;
 			} else if (cmd.cmd === 'P') {
-				maxsleep *= 30;
-				minsleep *= 30;
+				maxsleep *= 35;
+				minsleep *= 35;
 			} else if (cmd.cmd === '^') {
 				scroll_now(cmd.px);
 				maxsleep = minsleep = 1;
+			} else if (cmd.cmd === 'c') {
+				clear_line();
 			} else if (cmd.cmd === 't') {
 				// Intentionally empty: event triggers are sent via last cmd.
-			} else if (cmd.cmd === 'c') {
-				// Intentionally empty: line clear is handled by last cmd.
 			}
 			last_cmd = cmd;
 		} else if (!last_cmd && cur >= 0){
@@ -295,7 +293,7 @@ var TECHNO = (function (module, $) {
 
 	newline = function (o) {
 		var offset = (o && 'fat' in o && o.fat) ? 2 : 1,
-		pauseline = o && 'pauseline' in o && o.pauseline,
+		pauseline = o && 'pause_line' in o && o.pause_line,
 		immed = o && 'immediate' in o && o.immediate;
 
 		cy += offset;
@@ -318,8 +316,8 @@ var TECHNO = (function (module, $) {
 		if (o) {
 			fat = 'fat' in o && o.fat;
 			alt = 'alt' in o && o.alt;
-			pausekar = 'pausekar' in o && o.pausekar;
-			pauseline = 'pauseline' in o && o.pauseline;
+			pausekar = 'pause_kar' in o && o.pause_kar;
+			pauseline = 'pause_line' in o && o.pause_line;
 			runon = 'runon' in o && o.runon;
 			event = 'event' in o && o.event;
 			immed = 'immediate' in o && o.immediate;
@@ -376,6 +374,9 @@ var TECHNO = (function (module, $) {
 			} else {
 				++cx;
 				cx_px += charw_px;
+				if (cx > cols) {
+					newline(o);
+				}
 			}
 		}
 		if (immed) {
@@ -409,6 +410,9 @@ var TECHNO = (function (module, $) {
 		print: print,
 		newline: newline,
 		scroll: scroll,
+
+		clear_line: do_clear,
+		pause: do_pause,
 
 		show_cursor: show_cursor
 	});

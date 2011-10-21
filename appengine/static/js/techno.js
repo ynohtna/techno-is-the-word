@@ -24,6 +24,7 @@
 		$self = $(self),
 
 		word ='',
+		word_state = -1,
 		state = 'intro',
 
 		T = TECHNO,
@@ -46,6 +47,7 @@
 			immediate: true
 		},
 
+		// ----------------------------------------
 		anim_cfg = {
 			ms: 100,
 			kars: '----',
@@ -66,14 +68,62 @@
 			}
 		},
 
+		// ----------------------------------------
+		log_msgs = function(msgs) {
+			var i = 0,
+			l = msgs ? msgs.length : 0;
+			while(i < l) {
+				T.newline();
+				T.print(msgs[i++]);
+				T.pause(true);
+			}
+		},
+
 		send_word = function () {
 			T.show_cursor(false);
 			state = 'sending';
 
 			// AJAX send word to server.
+			$.ajax({
+				url: '/status/' + word,
+				dataType: 'json',
+				success: function (response/*, status*/) {
+					// Stop processing animation.
+					anim_cfg.c = -1;
+
+					// Clear line, show cleansed word
+					// and status messages.
+					word = response && response.word ? response.word : 'techno';
+					T.print(word, { carriage_return: true,
+									clear_line: true,
+									immediate: true
+								  });
+
+					log_msgs(response.txt);
+
+					state = 'polling';
+				},
+				error: function (xhr/*, status, error*/) {
+					// Stop processing animation.
+					anim_cfg.c = -1;
+
+					T.print('error!', { alt: true,
+										carriage_return: true,
+										clear_line: true,
+										immediate: true
+									  });
+					if (xhr) {
+						T.print(xhr.responseText ? xhr.responseText.toLowerCase()
+								: xhr.statusText.toLowerCase());
+					} else {
+						T.print('failure');
+					}
+					T.print('\nword:', { event: 'display', params: 'start_input' });
+				}
+			});
 
 			// Start progress indicator.
-			anim_cfg.kars = '------------';
+			anim_cfg.kars = '~~~~~~~~~~~~';
 			setTimeout(anim, anim_cfg.ms);
 		},
 
@@ -117,8 +167,8 @@
 		},
 
 		start_input = function () {
+			word = '';
 			state = 'input';
-			$(document).keydown(keydown);
 			T.show_cursor(true);
 		};
 
@@ -127,24 +177,18 @@
 			start_input();
 		});
 
+		// Capture keyboard input.
+		$(document).keydown(keydown);
 
 		// Initialise display module.
 		T.display_init(self, opts);
 
 		// Display intro text.
-		T.print('techno', { fat: true, alt: true, pausekar: true });
-		T.print('is the word!', { alt: true, pauseline: true });
-		T.print('~~~~----~~~~');
+		T.print('techno', { fat: true, alt: true, pause_kar: true });
+		T.print('is the word!', { alt: true, pause_line: true });
+		T.print('------------');
 		T.newline();
 		T.print('word:', { event: 'display', params: 'start_input' });
-
-		// Upon display complete event, start flashing cursor,
-		// receive input until enter.
-
-		// Send input to server, instantiating communications channel.
-		// Receive updates over channel.
-		// Receive final calculated data.
-		// Reboot.
 
 		return self;
 	};
