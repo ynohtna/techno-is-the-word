@@ -30,7 +30,7 @@ def status(word, last_state):
         'word': word,
         'state': actual_state,
         'txt': ['thinking...', 'reticulating\nsplines...', 'activating\nstrobes...',
-                'quantizing\nbeats...']
+                'quantizing\nbeats...', 'wobbling\nwoofers...']
         }
 
     return status

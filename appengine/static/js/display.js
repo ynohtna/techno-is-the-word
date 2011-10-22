@@ -414,6 +414,7 @@ var TECHNO = (function (module, $) {
 		clear_line: do_clear,
 		pause: do_pause,
 
-		show_cursor: show_cursor
+		show_cursor: show_cursor,
+		push_event: do_event
 	});
 }(TECHNO || {}, jQuery));

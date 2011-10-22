@@ -50,10 +50,10 @@
 		// ----------------------------------------
 		anim_cfg = {
 			ms: 100,
-			kars: '----',
+			kars: '~~~~~~~~~~~~',
 			c: 0
 		},
-		anim = function () {
+		anim = function (no_loop) {
 			var n = anim_cfg.c,
 			l = anim_cfg.kars.length,
 			l2 = l << 1,
@@ -64,6 +64,8 @@
 			} else {
 				T.print(anim_cfg.kars.slice(0, mn), process_opts);
 				anim_cfg.c++;
+			}
+			if (!no_loop) {
 				setTimeout(anim, anim_cfg.ms);
 			}
 		},
@@ -72,6 +74,7 @@
 		log_msgs = function(msgs) {
 			var i = 0,
 			l = msgs ? msgs.length : 0;
+
 			while(i < l) {
 				T.newline();
 				T.print(msgs[i++]);
@@ -79,6 +82,37 @@
 			}
 		},
 
+		// ----------------------------------------
+		poll = function (doit) {
+			if (anim_cfg.c <= 24) {
+				// Not yet time to poll.
+				anim(true);
+				setTimeout(poll, anim_cfg.ms);
+				return;
+			}
+
+			// AJAX to server.
+			word_state++;
+
+			if (word_state < 3) {
+				anim_cfg.c = -1;
+				log_msgs(['hubba bubba!']);
+				T.push_event('start_polling');
+			} else {
+				state = 'done';
+				T.print('\n--==~~~~==--', {alt: false });
+				T.print('! finished !', { alt: true })
+				T.print('--==~~~~==--', { alt: false });
+			}
+		},
+
+		start_polling = function () {
+			state = 'polling';
+			anim_cfg.c = 0;
+			setTimeout(poll, anim_cfg.ms);
+		},
+
+		// ----------------------------------------
 		send_word = function () {
 			T.show_cursor(false);
 			state = 'sending';
@@ -101,7 +135,7 @@
 
 					log_msgs(response.txt);
 
-					state = 'polling';
+					T.push_event('start_polling');
 				},
 				error: function (xhr/*, status, error*/) {
 					// Stop processing animation.
@@ -123,7 +157,6 @@
 			});
 
 			// Start progress indicator.
-			anim_cfg.kars = '~~~~~~~~~~~~';
 			setTimeout(anim, anim_cfg.ms);
 		},
 
@@ -176,6 +209,7 @@
 		$self.bind('display', function (event, param) {
 			start_input();
 		});
+		$self.bind('start_polling', start_polling);
 
 		// Capture keyboard input.
 		$(document).keydown(keydown);
