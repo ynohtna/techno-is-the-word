@@ -11,6 +11,7 @@ from views import *
 
 routes = [
         (r'/status/(.*)', process.Status),
+        (r'/result/(.*)', result.Result),
         (r'/.*', home.HomePage)
     ]
 

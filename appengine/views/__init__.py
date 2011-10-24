@@ -1,2 +1,3 @@
 __all__ = ['home',
-           'process']
+           'process',
+           'result']

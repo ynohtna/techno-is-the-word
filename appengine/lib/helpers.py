@@ -1,4 +1,4 @@
-# ------------------------------------------------------------
+# ============================================================
 def cleanse_word(word):
     if not word:
         return
@@ -7,8 +7,9 @@ def cleanse_word(word):
 
     import re, unicodedata
     value = unicodedata.normalize('NFKD', word).encode('ascii', 'ignore')
-    value = unicode(re.sub('[^\w\s!\.,:-=]', '', value).strip().lower())
+    value = unicode(re.sub('[^\w\s\!\.\,\:\-\=]', '', value).strip().lower())
     return value
+
 
 # ============================================================
 def dbg():

@@ -121,19 +121,22 @@
 			$.ajax({
 				url: '/status/' + word,
 				dataType: 'json',
-				success: function (response/*, status*/) {
+				success: function (response, status) {
 					// Stop processing animation.
 					anim_cfg.c = -1;
 
-					// Clear line, show cleansed word
-					// and status messages.
-					word = response && response.word ? response.word : 'techno';
-					T.print(word, { carriage_return: true,
-									clear_line: true,
-									immediate: true
-								  });
+					if (response) {
+						// Clear line, show cleansed word
+						// and status messages.
+						word = response.word || 'techno';
+						word_state = response.state || 0;
+						T.print(word, { carriage_return: true,
+										clear_line: true,
+										immediate: true
+									  });
 
-					log_msgs(response.txt);
+						log_msgs(response.txt);
+					}
 
 					T.push_event('start_polling');
 				},
@@ -201,6 +204,7 @@
 
 		start_input = function () {
 			word = '';
+			word_state = -1;
 			state = 'input';
 			T.show_cursor(true);
 		};
