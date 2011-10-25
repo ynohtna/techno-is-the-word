@@ -4,6 +4,8 @@ from imports import *
 from lib.helpers import cleanse_word
 from models import *
 
+from process.process import process_deferred
+
 from django.utils import simplejson
 import urllib
 
@@ -18,28 +20,41 @@ def status_update(input_word, last_state):
 
     if not last_state:
         last_state = -1
+    else:
+        try:
+            last_state = int(last_state)
+        except:
+            last_state = -1
 
-    # Do a fast in-memory cache check against the word's
-    # last reported state, returning False if unchanged.
+    if last_state >= 0 and not status.has_fresh_state(clean_word, last_state):
+        logging.info('State UNCHANGED for %s [%i]' % (clean_word, last_state))
+        return False
 
     # Look up word and it's associated status.
-    w = word.get_word(clean_word)
+    w, new = word.get_word(clean_word)
     if not w:
         logging.error('FAILED to get_word %s' % clean_word)
         return None
 
     result = None
-    if w.result:
-         result = '/result/%s' % clean_word
+    if w.completed():
+         result = w.result_url()
 
     actual_state = 0
-    txt = ['thinking...']
+    txt = []
 
-    statuses = status.get_status(w, last_state)
-    if statuses:
-        # Unpack new text messages.
-        # Update in-memory status cache.
-        pass
+    if not new:
+        statuses = status.get_status(clean_word, last_state)
+        if statuses:
+            for s in statuses:
+                logging.info('%i: %s' % (s.state, s.txt))
+                for t in s.txt:
+                    txt.append(t)
+                actual_state = s.state
+    else:
+        # Kick off processing.
+        txt = ['working...']
+        process_deferred(clean_word)
 
     if last_state >= actual_state:
         # No change.

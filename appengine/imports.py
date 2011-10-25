@@ -1,5 +1,5 @@
 # Basic Python stuff.
-import datetime, logging, os, random, re, sys, urllib
+import datetime, itertools, logging, os, random, re, sys, urllib
 
 
 # ----------------------------------------

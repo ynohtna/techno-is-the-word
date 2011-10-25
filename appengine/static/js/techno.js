@@ -83,6 +83,25 @@
 		},
 
 		// ----------------------------------------
+		ajax_error = function (xhr/*, status, error*/) {
+			// Stop processing animation.
+			anim_cfg.c = -1;
+
+			T.print('error!', { alt: true,
+								carriage_return: true,
+								clear_line: true,
+								immediate: true
+							  });
+			if (xhr) {
+				T.print(xhr.responseText ? xhr.responseText.toLowerCase()
+						: xhr.statusText.toLowerCase());
+			} else {
+				T.print('failure');
+			}
+			// Restart input cycle.
+			T.print('\nword:', { event: 'display', params: 'start_input' });
+		},
+
 		poll = function (doit) {
 			if (anim_cfg.c <= 24) {
 				// Not yet time to poll.
@@ -91,19 +110,36 @@
 				return;
 			}
 
-			// AJAX to server.
-			word_state++;
+			// Request processing update status.
+			$.ajax({
+				url: '/status/' + word,
+				data: { state: word_state },
+				dataType: 'json',
+				success: function (response, status) {
+					// Stop processing animation.
+					anim_cfg.c = -1;
 
-			if (word_state < 3) {
-				anim_cfg.c = -1;
-				log_msgs(['hubba bubba!']);
-				T.push_event('start_polling');
-			} else {
-				state = 'done';
-				T.print('\n--==~~~~==--', {alt: false });
-				T.print('! finished !', { alt: true })
-				T.print('--==~~~~==--', { alt: false });
-			}
+					if (response) {
+						// Clear line, show cleansed word
+						// and status messages.
+						word_state = response.state;
+						log_msgs(response.txt);
+
+						console.log('state: ' + word_state);
+						console.log(response.txt);
+
+						if (response.result) {
+							state = 'done';
+							T.print('\n--==~~~~==--', {alt: false });
+							T.print('! finished !', { alt: true })
+							T.print('--==~~~~==--', { alt: false });
+						}
+					}
+					// Continue polling for processing updates.
+					T.push_event('start_polling');
+				},
+				error: ajax_error
+			});
 		},
 
 		start_polling = function () {
@@ -117,7 +153,7 @@
 			T.show_cursor(false);
 			state = 'sending';
 
-			// AJAX send word to server.
+			// Send word request to server.
 			$.ajax({
 				url: '/status/' + word,
 				dataType: 'json',
@@ -138,25 +174,10 @@
 						log_msgs(response.txt);
 					}
 
+					// Start polling for processing updates.
 					T.push_event('start_polling');
 				},
-				error: function (xhr/*, status, error*/) {
-					// Stop processing animation.
-					anim_cfg.c = -1;
-
-					T.print('error!', { alt: true,
-										carriage_return: true,
-										clear_line: true,
-										immediate: true
-									  });
-					if (xhr) {
-						T.print(xhr.responseText ? xhr.responseText.toLowerCase()
-								: xhr.statusText.toLowerCase());
-					} else {
-						T.print('failure');
-					}
-					T.print('\nword:', { event: 'display', params: 'start_input' });
-				}
+				error: ajax_error
 			});
 
 			// Start progress indicator.

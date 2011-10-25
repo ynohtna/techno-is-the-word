@@ -14,16 +14,14 @@ def result(input_word):
         return None
 
     # Look up word and it's associated results.
-    w = word.get_word(clean_word)
+    w, new = word.get_word(clean_word)
     if not w:
         logging.error('FAILED to get_word %s' % clean_word)
         return None
 
     # TODO: Dereference result blob.
 
-    import random
-    return random.choice([None,
-                          '/* ChucK code for %s */' % clean_word])
+    return '/* ChucK code for %s */' % w.word()
 
 
 # ============================================================

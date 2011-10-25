@@ -10,7 +10,7 @@ if not config.SETTINGS['ON_DEV']:
 from views import *
 
 routes = [
-        (r'/status/(.*)', process.Status),
+        (r'/status/(.*)', status.Status),
         (r'/result/(.*)', result.Result),
         (r'/.*', home.HomePage)
     ]

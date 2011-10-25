@@ -1,0 +1,12 @@
+indexes:
+
+- kind: Status
+  ancestor: yes
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: Status
+  ancestor: yes
+  properties:
+  - name: state
