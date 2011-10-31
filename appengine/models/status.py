@@ -49,6 +49,10 @@ def has_fresh_state(word, last_state):
 def set_status(word, state, txt):
     skey = '%03i' % state
     wkey = _wkey(word)
+
+    if not isinstance(txt, list):
+        txt = [txt]
+
     s = Status(parent = wkey,
                key_name = skey,
                state = state,

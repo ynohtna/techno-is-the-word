@@ -1,13 +1,15 @@
-from imports import *
-from models import *
-
+import logging
+from models.status import set_status
 
 # ============================================================
 def analyse(w, state):
-    logging.info('ANALYSING %s' % w.word())
+    word = w.word()
 
-    txt = 'analysing %i' % state
+    logging.info('ANALYSING %s [%i]' % (word, state))
 
-    state += 1
+    if state < 2:
+        import wordplay
+        txt = wordplay.scores(word)
+        state = 10
 
-    status.set_status(w.word(), state, [txt])
+    set_status(word, state, txt)
