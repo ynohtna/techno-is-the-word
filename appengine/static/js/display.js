@@ -158,8 +158,8 @@ var TECHNO = (function (module, $) {
 	exec_cmd = function () {
 		// Pop first cmd off queue.
 		var cmd = cmd_queue.shift(),
-		maxsleep = 15,
-		minsleep = 3,
+		maxsleep = 10,
+		minsleep = 2,
 		sleep = 10;
 
 		if ((cmd || last_cmd) && cur >= 0) {
@@ -186,8 +186,8 @@ var TECHNO = (function (module, $) {
 				maxsleep *= 20;
 				minsleep *= 20;
 			} else if (cmd.cmd === 'P') {
-				maxsleep *= 35;
-				minsleep *= 35;
+				maxsleep *= 30;
+				minsleep *= 30;
 			} else if (cmd.cmd === '^') {
 				scroll_now(cmd.px);
 				maxsleep = minsleep = 1;

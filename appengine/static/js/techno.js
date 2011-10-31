@@ -243,9 +243,17 @@
 		T.display_init(self, opts);
 
 		// Display intro text.
+/*/
+		T.print('0123456789.,');
+		T.print('abcdefghijkl');
+		T.print('mnopqrstuvwx');
+		T.print('yz~<>{!=+-;"');
+		T.print('\'|:');
+/**/
 		T.print('techno', { fat: true, alt: true, pause_kar: true });
 		T.print('is the word!', { alt: true, pause_line: true });
 		T.print('------------');
+/**/
 		T.newline();
 		T.print('word:', { event: 'display', params: 'start_input' });
 

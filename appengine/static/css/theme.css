@@ -17,7 +17,7 @@ a:visited,
 a:active {
 	color: #575c56;
 	text-decoration: none;
-	border-bottom: 1px dashed #789b7a;
+	border-bottom: 1px dashed #575c56;
 }
 a:hover {
 	color: #676c66;
