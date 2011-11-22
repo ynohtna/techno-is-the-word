@@ -2,7 +2,7 @@ class ContextFreeGrammar(object):
 
     def __init__(self, file_obj = None):
         self.rules = dict()
-        if file_obj != None:
+        if file_obj:
             self.parse_from_file(file_obj)
 
     # Rules are stored in self.rules, a dictionary.
@@ -87,3 +87,35 @@ if __name__ == '__main__':
     cfree.add_rule('P', ['S', 'which', 'V', 'S'])
     expansion = cfree.get_expansion('P')
     print ' '.join(expansion)
+
+    print
+
+    # --------------------
+    kick_rules = """
+MEASURE -> B4 | B2 B2 | B1 B1 B1 B1
+
+B4 -> X...X...X...X...
+B4 -> X...X...X...X.x.
+B4 -> X.x.X...X.x.X.x.
+B4 -> X.x.X...X.x.X...
+B4 -> X...x.x.....X...
+B4 -> X...X.....x.X...
+B4 -> X...X.x...x.X...
+B4 -> X.........x.....
+B4 -> X.....x...x.....
+B4 -> X.....x....x....
+B4 -> X..........x....
+
+B2 -> X..x..x.
+B2 -> X..X..x.
+B2 -> X...x...
+B2 -> X.xX..x.
+B2 -> X..xX.x.
+
+B1 -> X... | X..x | X.x.
+"""
+    import io
+    cfg = ContextFreeGrammar(io.StringIO(kick_rules))
+
+    expansion = cfg.get_expansion('MEASURE')
+    print ''.join(expansion)
