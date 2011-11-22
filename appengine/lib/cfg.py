@@ -1,10 +1,12 @@
-class ContextFree(object):
+class ContextFreeGrammar(object):
 
-    def __init__(self):
+    def __init__(self, file_obj = None):
         self.rules = dict()
+        if file_obj != None:
+            self.parse_from_file(file_obj)
 
-    # rules are stored in self.rules, a dictionary; the rules themselves are
-    # lists of expansions (which themselves are lists)
+    # Rules are stored in self.rules, a dictionary.
+    # The rules themselves are lists of expansions (which themselves are lists).
     def add_rule(self, rule, expansion):
         if rule in self.rules:
             self.rules[rule].append(expansion)
@@ -12,33 +14,61 @@ class ContextFree(object):
             self.rules[rule] = [expansion]
 
     def expand(self, start):
-        from random import choice
-
-        # if the starting rule was in our set of rules, then we can expand it
+        # If the starting rule is in our set of rules, then we can expand it...
         if start in self.rules:
             possible_expansions = self.rules[start]
 
-            # grab one possible expansion
-            random_expansion = choice(possible_expansions)
+            # Choose an expansion from the possibilities.
+            random_expansion = self.choose(possible_expansions)
 
-            # call this method again with the current element of the expansion
+            # Call this method again with the current element of the expansion.
             for elem in random_expansion:
-                self.expand(elem)
-        else:
-            # if the rule wasn't found, then it's a terminal: simply append the
-            # string to the expansion
-            self.expansion.append(start)
+                if elem in self.rules:
+                    self.expand(elem)
+                else:
+                    # If the rule wasn't found, then it's a terminal and can
+                    # be appended immediately to the expansion.
+                    self.expansion.append(elem)
 
-    # utility method to run the expand method and return the results
+    # Utility method to run the expand method and return the results.
     def get_expansion(self, axiom):
         self.expansion = list()
         self.expand(axiom)
         return self.expansion
 
+    # Method to choose 
+    def choose(self, options):
+        from random import choice
+        return choice(options)
 
-# ----------------------------------------
+
+    # ----------------------------------------
+    def parse_from_file(self, file_obj):
+        import re
+
+        # rules are stored in the given file in the following format:
+        # Rule -> a | a b c | b c d
+        # ... which will be translated to:
+        # self.add_rule('Rule', ['a'])
+        # self.add_rule('Rule', ['a', 'b', 'c'])
+        # self.add_rule('Rule', ['b', 'c', 'd'])
+
+        for line in file_obj:
+            line = re.sub(r"#.*$", "", line) # get rid of comments
+            line = line.strip() # strip any remaining white space
+
+            match_obj = re.search(r"(\w+) *-> *(.*)", line)
+            if match_obj:
+                rule = match_obj.group(1)
+                expansions = re.split(r"\s*\|\s*", match_obj.group(2))
+                for expansion in expansions:
+                    expansion_list = expansion.split(" ")
+                    self.add_rule(rule, expansion_list)
+
+
+# ============================================================
 if __name__ == '__main__':
-    cfree = ContextFree()
+    cfree = ContextFreeGrammar()
     cfree.add_rule('S', ['NP', 'VP'])
     cfree.add_rule('NP', ['the', 'N'])
     cfree.add_rule('N', ['cat'])
