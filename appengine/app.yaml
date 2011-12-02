@@ -34,6 +34,10 @@ admin_console:
   pages:
   - name: App Stats
     url: /_ah/stats/
+  - name: Flush Words
+    url: /_ah/nimda/flush
+  - name: List Words
+    url: /_ah/nimda/list
 
 # ----------------------------------------
 error_handlers:
@@ -67,6 +71,10 @@ handlers:
   upload: static/robots.txt
 
 # Admin pages.
+- url: /_ah/nimda/.*
+  script: admin.py
+  login: admin
+
 - url: /_ah/remote_api
   script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
   login: admin

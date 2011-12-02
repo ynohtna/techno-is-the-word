@@ -1,3 +1,6 @@
 queue:
 - name: default
-  rate: 12/m
+  rate: 50/s
+  bucket_size: 100
+  max_concurrent_requests: 100
+

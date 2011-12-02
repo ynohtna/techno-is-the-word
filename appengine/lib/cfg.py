@@ -29,14 +29,22 @@ class ContextFreeGrammar(object):
                     # If the rule wasn't found, then it's a terminal and can
                     # be appended immediately to the expansion.
                     self.expansion.append(elem)
+        else:
+            return start
 
     # Utility method to run the expand method and return the results.
-    def get_expansion(self, axiom):
-        self.expansion = list()
-        self.expand(axiom)
+    def get_expansion(self, axiom, clear = True):
+        if clear:
+            self.expansion = list()
+
+        if isinstance(axiom, list):
+            map(lambda a: self.get_expansion(a, False), axiom)
+        else:
+            self.expand(axiom)
+
         return self.expansion
 
-    # Method to choose 
+    # Method that chooses an expansion from a list of potentials.
     def choose(self, options):
         from random import choice
         return choice(options)
@@ -92,7 +100,8 @@ if __name__ == '__main__':
 
     # --------------------
     kick_rules = """
-MEASURE -> B4 | B2 B2 | B1 B1 B1 B1
+SECTION -> MEASURE MEASURE MEASURE MEASURE
+MEASURE -> B4 | B2 B2 | B1 B1 B1 B1 | B2 B1 B1 | B1 B2 B1 | B1 B1 B2
 
 B4 -> X...X...X...X...
 B4 -> X...X...X...X.x.
@@ -111,6 +120,9 @@ B2 -> X..X..x.
 B2 -> X...x...
 B2 -> X.xX..x.
 B2 -> X..xX.x.
+B2 -> X.xX..x.
+B2 -> X.xX.xX.
+B2 -> X.Xx.xX.
 
 B1 -> X... | X..x | X.x.
 """
@@ -118,4 +130,8 @@ B1 -> X... | X..x | X.x.
     cfg = ContextFreeGrammar(io.StringIO(kick_rules))
 
     expansion = cfg.get_expansion('MEASURE')
+    print ''.join(expansion)
+    print
+
+    expansion = cfg.get_expansion(['MEASURE', 'MEASURE'])
     print ''.join(expansion)

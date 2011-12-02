@@ -1,6 +1,28 @@
 from imports import *
 
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
+from jinja2 import Markup
+
+
+# ============================================================
+def txtresponse(method, *args, **kwards):
+    def wrapit(self):
+        self.response.headers['Content-Type'] = 'text/plain'
+        try:
+            message = method(self, *args, **kwards)
+            self.response.out.write(message)
+        except Exception, e:
+            error = repr(e)
+            logging.error('EXCEPTION! %s' % error)
+            self.response.out.write(error)
+    return wrapit
+
+
+# ============================================================
+def date_and_time(dt, format='<span class="date">%d-%m-%Y</span> <span class="time">%X</span>'):
+    if not dt:
+        return '??-??-????'
+    return Markup(dt.strftime(format))
 
 
 # ============================================================
@@ -12,6 +34,7 @@ class Handler(webapp.RequestHandler):
     jinja_env = Environment(loader = __jinja_template_loader,
                             autoescape = True,
                             extensions = ['jinja2.ext.autoescape'])
+    jinja_env.filters['datetime'] = date_and_time
 
     # ----------------------------------------
     def render_to_string(self, template_name, values = None):

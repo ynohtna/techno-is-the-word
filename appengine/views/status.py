@@ -11,7 +11,7 @@ import urllib
 
 
 # ============================================================
-def status_update(input_word, last_state):
+def status_update(input_word, last_state, ip = None):
     clean_word = cleanse_word(input_word)
 
     if not clean_word:
@@ -31,7 +31,7 @@ def status_update(input_word, last_state):
         return False
 
     # Look up word and it's associated status.
-    w, new = word.get_word(clean_word)
+    w, new = word.get_word(clean_word, ip = ip)
     if not w:
         logging.error('FAILED to get_word %s' % clean_word)
         return None
@@ -75,7 +75,7 @@ class Status(view.Handler):
     def handle(self, word):
         word = urllib.unquote(word)
 
-        output = status_update(word, self.request.get('state'))
+        output = status_update(word, self.request.get('state'), self.request.remote_addr)
 
         if output == None:
             # Bad word.

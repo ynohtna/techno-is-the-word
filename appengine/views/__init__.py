@@ -1,3 +1,4 @@
-__all__ = ['home',
+__all__ = ['admin',
+           'home',
            'result',
            'status']
