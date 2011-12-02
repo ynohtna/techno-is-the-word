@@ -67,6 +67,17 @@ var TECHNO = (function (module, $) {
 	scale_x = 1,
 	scale_y = 1,
 	alt_colour = false,
+	alt_clr = function () {
+		var clr = opts.alt,
+		clri;
+		if (typeof alt_colour == "number") {
+			clr = 'alt' + alt_colour;
+			if (clr in opts) {
+				clr = opts[clr];
+			}
+		}
+		return clr;
+	},
 
 	// ========================================
 	// Initialization.
@@ -128,7 +139,7 @@ var TECHNO = (function (module, $) {
 	// ========================================
 	// Display manipulators.
 	rect_immediate = function (x, y, w, h) {
-		ctx.fillStyle = alt_colour ? opts.alt : opts.fg;
+		ctx.fillStyle = alt_colour ? alt_clr() : opts.fg;
 		ctx.fillRect(cx_px + (x * scale_x), cy_px + (y * scale_y),
 					 w * scale_x, h * scale_y);
 	},
@@ -334,7 +345,13 @@ var TECHNO = (function (module, $) {
 		}
 
 		if (alt) {
-			alt_colour = true;
+			if (typeof o.alt == 'number') {
+				alt_colour = o.alt;
+			} else {
+				alt_colour = true;
+			}
+		} else {
+			alt_colour = false;
 		}
 
 		if (immed) {

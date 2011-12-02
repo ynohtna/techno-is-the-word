@@ -32,14 +32,16 @@ inbound_services:
 
 admin_console:
   pages:
-  - name: App Stats
-    url: /_ah/stats/
-  - name: Flush Words
-    url: /_ah/nimda/flush
-  - name: List Words
-    url: /_ah/nimda/list
+  - name: Sample List
+    url: /_ah/nimda/samples
   - name: Upload Sample
     url: /_ah/nimda/upload
+  - name: Word List
+    url: /_ah/nimda/list
+  - name: Flush Words
+    url: /_ah/nimda/flush
+  - name: App Stats
+    url: /_ah/stats/
 
 
 # ----------------------------------------

@@ -17,7 +17,8 @@
 
 			fg: '#fff',
 			bg: '#000',
-			alt: '#ff0'
+			alt: '#ff0',
+			alt1: '#fe0'
 		},
 		opts = $.extend({}, defaults, options),
 		self = this.get(0),
@@ -33,7 +34,7 @@
 		// ----------------------------------------
 		punctuation_lookup = ':=,-.',
 		input_opts = {
-			alt: true,
+			alt: 1,
 			carriage_return: true,
 			clear_line: true,
 			runon: true,
@@ -184,6 +185,7 @@
 						word = response.word || 'techno';
 						word_state = response.state || 0;
 						T.print(word, { carriage_return: true,
+										alt: true,
 										clear_line: true,
 										immediate: true
 									  });
