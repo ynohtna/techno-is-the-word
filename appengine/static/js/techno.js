@@ -26,6 +26,7 @@
 		word ='',
 		word_state = -1,
 		state = 'intro',
+		nada_count = 0,
 
 		T = TECHNO,
 
@@ -83,6 +84,12 @@
 		},
 
 		// ----------------------------------------
+		restart_input = function () {
+			// Restart input cycle.
+			nada_count = 0;
+			T.print('\nword:', { event: 'display', params: 'start_input' });
+		},
+
 		ajax_error = function (xhr/*, status, error*/) {
 			// Stop processing animation.
 			anim_cfg.c = -1;
@@ -98,8 +105,7 @@
 			} else {
 				T.print('failure');
 			}
-			// Restart input cycle.
-			T.print('\nword:', { event: 'display', params: 'start_input' });
+			restart_input();
 		},
 
 		poll = function (doit) {
@@ -115,7 +121,7 @@
 				url: '/status/' + word,
 				data: { state: word_state },
 				dataType: 'json',
-				success: function (response, status) {
+				success: function (response, status, xhr) {
 					// Stop processing animation.
 					anim_cfg.c = -1;
 
@@ -130,11 +136,21 @@
 
 						if (response.result) {
 							state = 'done';
-							T.print('\n--==~~~~==--', {alt: false });
+							T.print('\n--==~~~~==--', { alt: false });
 							T.print('! finished !', { alt: true })
 							T.print('--==~~~~==--', { alt: false });
 						}
+					} else if (xhr.status == 304) {
+						nada_count += 1;
+						if (nada_count >= 20) {
+							T.print('\ntimed out!\ntry again...\n', { alt: true });
+
+							// Restart input cycle.
+							restart_input();
+							return;
+						}
 					}
+
 					// Continue polling for processing updates.
 					T.push_event('start_polling');
 				},
