@@ -67,13 +67,13 @@ var TECHNO = (function (module, $) {
 	scale_x = 1,
 	scale_y = 1,
 	alt_colour = false,
-	alt_clr = function () {
+	alt_clr = function (alt) {
 		var clr = opts.alt,
 		clri;
-		if (typeof alt_colour == "number") {
-			clr = 'alt' + alt_colour;
-			if (clr in opts) {
-				clr = opts[clr];
+		if (typeof alt == "number") {
+			clri = 'alt' + alt;
+			if (clri in opts) {
+				clr = opts[clri];
 			}
 		}
 		return clr;
@@ -120,6 +120,7 @@ var TECHNO = (function (module, $) {
 	},
 	display_init = function (canvas, options) {
 		$.extend(opts, defaults, options);
+
 		cols = opts.chars_wide;
 
 		cvs = canvas;
@@ -139,7 +140,7 @@ var TECHNO = (function (module, $) {
 	// ========================================
 	// Display manipulators.
 	rect_immediate = function (x, y, w, h) {
-		ctx.fillStyle = alt_colour ? alt_clr() : opts.fg;
+		ctx.fillStyle = alt_colour ? alt_clr(alt_colour) : opts.fg;
 		ctx.fillRect(cx_px + (x * scale_x), cy_px + (y * scale_y),
 					 w * scale_x, h * scale_y);
 	},
@@ -180,7 +181,7 @@ var TECHNO = (function (module, $) {
 		// If last cmd was a stroke, restroke it with fg.
 		if (last_cmd) {
 			if (last_cmd.cmd === 's') {
-				ctx.fillStyle = last_cmd.alt ? opts.alt : opts.fg;
+				ctx.fillStyle = last_cmd.alt ? alt_clr(last_cmd.alt) : opts.fg;
 				ctx.fillRect(last_cmd.x, last_cmd.y, last_cmd.w, last_cmd.h);
 			} else if (last_cmd.cmd === 't') {
 				$(cvs).trigger(last_cmd.type, last_cmd.params);
@@ -345,11 +346,7 @@ var TECHNO = (function (module, $) {
 		}
 
 		if (alt) {
-			if (typeof o.alt == 'number') {
-				alt_colour = o.alt;
-			} else {
-				alt_colour = true;
-			}
+			alt_colour = (typeof o.alt == 'number') ? o.alt : true;
 		} else {
 			alt_colour = false;
 		}

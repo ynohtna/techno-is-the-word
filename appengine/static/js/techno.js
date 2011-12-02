@@ -18,7 +18,8 @@
 			fg: '#fff',
 			bg: '#000',
 			alt: '#ff0',
-			alt1: '#fe0'
+			alt1: '#fe0',
+			alt2: '#f0f'
 		},
 		opts = $.extend({}, defaults, options),
 		self = this.get(0),
@@ -95,16 +96,17 @@
 			// Stop processing animation.
 			anim_cfg.c = -1;
 
-			T.print('error!', { alt: true,
+			T.print('error!', { alt: 2,
 								carriage_return: true,
 								clear_line: true,
 								immediate: true
 							  });
 			if (xhr) {
 				T.print(xhr.responseText ? xhr.responseText.toLowerCase()
-						: xhr.statusText.toLowerCase());
+						: xhr.statusText.toLowerCase(),
+						{ alt: 2 });
 			} else {
-				T.print('failure');
+				T.print('failure', { alt: 2 });
 			}
 			restart_input();
 		},
@@ -145,7 +147,7 @@
 					} else if (xhr.status == 304) {
 						nada_count += 1;
 						if (nada_count >= 20) {
-							T.print('\ntimed out!\ntry again...\n', { alt: true });
+							T.print('\ntimed out!\ntry again...\n', { alt: 2 });
 
 							// Restart input cycle.
 							restart_input();
