@@ -3,6 +3,8 @@ syntax: glob
 .DS_Store
 *.pyc
 tmp/*
+appengine/db/blobs/*
+db.datastore
 
 syntax: regexp
 .*\#.*\#$
