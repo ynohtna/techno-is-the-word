@@ -38,6 +38,9 @@ admin_console:
     url: /_ah/nimda/flush
   - name: List Words
     url: /_ah/nimda/list
+  - name: Upload Sample
+    url: /_ah/nimda/upload
+
 
 # ----------------------------------------
 error_handlers:

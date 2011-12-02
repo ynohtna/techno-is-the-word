@@ -30,7 +30,7 @@
   {% else %}
   <td><strong>{{ w.word }}</strong></td>
   {% endif %}
-  <td>{{ w.status }}</td>
+  <td><a href="/status/{{ w.word }}">{{ w.status }}</a></td>
   <td><small>{{ w.updated|datetime }}</small></td>
   <td><small>{{ w.requested|datetime }}</small></td>
   <td>{{ w.ip }}</td>

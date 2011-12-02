@@ -36,3 +36,10 @@ class List(view.Handler):
         values['words'] = words
 
         self.render('admin/list.html', values)
+
+
+# ============================================================
+class Upload(view.Handler):
+    def get(self):
+        values = self.default_values()
+        self.render('admin/upload.html', values)

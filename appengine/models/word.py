@@ -52,12 +52,11 @@ def all_words(alphabetic = False):
 
     for w in all:
         word = w.word()
-        from models.status import from_cache
-        state = from_cache(word)
-        status = '%i' % state if state else '?'
+        from models.status import get_latest_state
+        state = get_latest_state(word, no_cache = False)
         words.append({
                 'word': word,
-                'status': status,
+                'status': state,
                 'requested': w.requested,
                 'updated': w.updated,
                 'complete': w.result_url() if w.completed() else None,

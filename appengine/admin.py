@@ -11,7 +11,8 @@ from views import *
 
 routes = [
         (r'/_ah/nimda/flush', admin.Flush),
-        (r'/_ah/nimda/list', admin.List)
+        (r'/_ah/nimda/list', admin.List),
+        (r'/_ah/nimda/upload', admin.Upload)
     ]
 
 

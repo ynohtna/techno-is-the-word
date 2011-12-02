@@ -16,11 +16,6 @@ class Status(db.Expando):
 from google.appengine.api import memcache
 STATUS_CACHE = {}
 
-def update_cache(word, latest_state):
-    global STATUS_CACHE
-    STATUS_CACHE[word] = latest_state
-    memcache.set(word, latest_state)
-
 def from_cache(word):
     '''Returns None if status is not cached.'''
     global STATUS_CACHE
@@ -32,6 +27,14 @@ def from_cache(word):
 #        logging.info('MEM CACHE')
         return status
     return None
+
+def update_cache(word, latest_state):
+    global STATUS_CACHE
+    last = from_cache(word)
+    if last and latest_state <= last:
+        return
+    STATUS_CACHE[word] = latest_state
+    memcache.set(word, latest_state)
 
 def clear_cache():
     global STATUS_CACHE
@@ -61,8 +64,8 @@ def get_status(word, last_state):
 
 # ============================================================
 # Check cache for this.
-def get_latest_state(word):
-    status = from_cache(word)
+def get_latest_state(word, no_cache = False):
+    status = None if no_cache else from_cache(word)
     if status:
         return status
 
