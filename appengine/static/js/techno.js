@@ -127,9 +127,10 @@
 
 					if (response) {
 						// Clear line, show cleansed word
-						// and status messages.
+						// and status messages, reset nada count.
 						word_state = response.state;
 						log_msgs(response.txt);
+						nada_count = 0;
 
 						console.log('state: ' + word_state);
 						console.log(response.txt);
@@ -264,7 +265,7 @@
 		T.print('abcdefghijkl');
 		T.print('mnopqrstuvwx');
 		T.print('yz~<>{!=+-;"');
-		T.print('\'|:');
+		T.print('\'|:%~*€');
 /**/
 		T.print('techno', { fat: true, alt: true, pause_kar: true });
 		T.print('is the word!', { alt: true, pause_line: true });

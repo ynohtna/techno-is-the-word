@@ -36,11 +36,12 @@ var FONT = (function (module, $) {
 		"'": "'",
 		'|': '|',
 		':': ':',
-// *
+		'%': '%',
+		'*': '*',
+		'€': '€',
 // $
 // £
 // @
-// €
 // ^
 // (
 // )
@@ -318,6 +319,21 @@ var FONT = (function (module, $) {
 			cfg.rect(x, y, cfg.width, -bth);
 			cfg.rect(x, midy + mth, sth, bhin - mth);
 			break;
+		// ----------------------------------------
+		// Full block.
+		case '%':
+			cfg.rect(x, y, cfg.width, -cfg.bothigh - cfg.tophigh);
+			return;
+		// Small central block.
+		case '*':
+			cfg.rect(x + (sth << 1), topyin + cfg.topthick,
+					 cfg.width - (sth << 2),
+					 cfg.tophigh + cfg.bothigh - ((cfg.topthick + cfg.botthick) << 1));
+			return;
+		// Tiny central block of width & height set by mid thickness.
+		case '€':
+			cfg.rect(mx, midy, mth, mth);
+			return;
 		// ----------------------------------------
 		// Square inset block, shown for unrecognised characters.
 		case '~':
