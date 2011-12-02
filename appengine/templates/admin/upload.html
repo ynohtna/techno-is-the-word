@@ -1,0 +1,29 @@
+<html>
+<head>
+  <title>upload - Techno is the Word!</title>
+
+  <style>
+	label {
+	display: inline-block;
+	width: 8em;
+	}
+  </style>
+</head>
+<body>
+  <h1>Upload</h1>
+
+  <form action="{{ upload_url }}" method="post" enctype="multipart/form-data">
+	<input type="file" name="file"/>
+	<div>
+	  <label for="sampleType">Type:</label>
+	  <input type="text" id="sampleType" name="type"/>
+	</div>
+	<div>
+	  <label for="sampleNotes">Notes:</label>
+	  <textarea id="sampleNotes" name="notes"></textarea>
+	</div>
+	<button action="submit">Upload&hellip;</button>
+  </form>
+
+</body>
+</html>

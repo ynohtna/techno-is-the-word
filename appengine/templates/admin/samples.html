@@ -1,0 +1,61 @@
+{# -*-Jinja2-*-  -#}
+<html>
+<head>
+  <title>samples - Techno Is The Word</title>
+
+  <style>
+	td {
+	padding-bottom: 3px;
+	border-bottom: 1px solid #ccc;
+	}
+	td.size {
+	text-align: right;
+	padding-right: 1em;
+	}
+	.action {
+	position: absolute;
+	top: 0.5em;
+	right: 1em;
+	line-height: 2em;
+	}
+  </style>
+
+</head>
+<body>
+  <h1><a href="{{ url }}">Samples</a></h1>
+
+{% if msg %}
+  <h2>{{ msg }}</h2>
+{% endif %}
+
+<div class="action">
+  <a href="/_ah/nimda/upload">Upload&hellip;</a>
+</div>
+
+  <table style="width: 100%">
+<thead>
+  <td>Sample</td>
+  <td>Type</td>
+  <td class="size">Size</td>
+  <td>IP</td>
+  <td>Created</td>
+  <td>Actions</td>
+</thead>
+
+{% for s in samples %}
+<tr class="sample-{{ s.type }}">
+  <td><strong>{{ s.filename }}</strong></td>
+  <td>{{ s.type }}</td>
+  <td class="size" title="{{ s.size }}">{{ s.size }}</td>
+  <td><small>{{ s.ip }}</small></td>
+  <td><small>{{ s.created|datetime }}</small></td>
+  <td>
+	<a href="{{ url }}?id={{ s.key().id() }}&amp;action=del">delete</a>
+	<a href="{{ url }}?id={{ s.key().id() }}&amp;action=listen">listen</a>
+  </td>
+</tr>
+{% endfor %}
+  </table>
+
+</body>
+</html>
