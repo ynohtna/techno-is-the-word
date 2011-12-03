@@ -9,7 +9,7 @@ def analyse(w, state):
 
     if state < 2:
         import wordplay
-        txt = wordplay.scores(word)
+        txt = wordplay.scores(w)
         state = 10
 
     set_status(word, state, txt)

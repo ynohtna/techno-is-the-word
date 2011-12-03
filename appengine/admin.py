@@ -13,7 +13,9 @@ routes = [
         (r'/_ah/nimda/flush', admin.Flush),
         (r'/_ah/nimda/list', admin.Words),
         (r'/_ah/nimda/samples', admin.Samples),
-        (r'/_ah/nimda/upload', admin.Upload)
+        (r'/_ah/nimda/upload', admin.Upload),
+        (r'/_ah/nimda/fetch', admin.FetchTechno),
+        (r'/_ah/nimda/filter', admin.FilterTechno)
     ]
 
 
@@ -30,5 +32,7 @@ def main():
     from google.appengine.ext.webapp.util import run_wsgi_app
     run_wsgi_app(application)
 
+
+# ============================================================
 if __name__ == "__main__":
     main()

@@ -38,7 +38,8 @@ _scores = {
 
 
 # ============================================================
-def scores(word):
+def scores(w):
+    word = w.word()
     sums = (0, 0, 0, 0, 0, 0)
 
     for kar in word:
@@ -47,6 +48,11 @@ def scores(word):
             continue
         sums = tuple(sum(t) for t in zip(sums, _scores[kar]))
 
-    return ['scrabble\nscore: %i' % sums[0],
+    w.set('scrabble', sums[0])
+    w.set('vowels', sums[1])
+    w.set('consonents', sums[2])
+
+    logs = ['scrabble\nscore: %i' % sums[0],
             'vowel ratio:\n%i:%i' % (sums[1], sums[2])
             ]
+    return logs

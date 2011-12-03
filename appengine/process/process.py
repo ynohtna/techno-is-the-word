@@ -25,6 +25,9 @@ def process(clean_word):
         # Temporary forced early out.
         return
 
+    # Persist latest word payload if needed.
+    w.persist_payload()
+
     # Queue up next processing step if required.
     if not w.completed():
         deferred.defer(process, clean_word)

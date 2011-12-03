@@ -2,6 +2,8 @@ import logging
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
 
+from django.utils import simplejson
+
 
 # ============================================================
 # Key name is the word in question.
@@ -13,6 +15,11 @@ class Word(db.Expando):
 
     ip = db.StringProperty(default = '?')
 
+    payload = db.TextProperty(default = '{}')
+
+    _dict = None
+    _dirty = False
+
     def word(self):
         return self.key().name()
 
@@ -21,6 +28,27 @@ class Word(db.Expando):
 
     def result_url(self):
         return '/result/%s' % self.word()
+
+    # ----------------------------------------
+    def unpack_payload(self):
+        if self._dict:
+            return
+        self._dict = simplejson.loads(self.payload)
+
+    def persist_payload(self, force_persist = False):
+        if (self._dirty or force_persist) and self._dict:
+            self.payload = simplejson.dumps(self._dict)
+            logging.info('PERSISTING PAYLOAD for %s' % self.word())
+            self.put()
+
+    def get(self, key, default = None):
+        self.unpack_payload()
+        return self._dict[key] if self._dict and key in self._dict else default
+
+    def set(self, key, value):
+        self.unpack_payload()
+        self._dict[key] = value
+        self._dirty = True
 
 
 # ============================================================
@@ -60,7 +88,8 @@ def all_words(alphabetic = False):
                 'requested': w.requested,
                 'updated': w.updated,
                 'complete': w.result_url() if w.completed() else None,
-                'ip': w.ip
+                'ip': w.ip,
+                'payload': w.payload
                 })
 
     return words

@@ -12,11 +12,13 @@
 	text-align: right;
 	padding-right: 1em;
 	}
-	.action {
+	.actions {
 	position: absolute;
 	top: 0.5em;
 	right: 1em;
 	line-height: 2em;
+	padding: 0 1em;
+	background-color: #f0f0f0;
 	}
   </style>
 
@@ -28,7 +30,11 @@
   <h2>{{ msg }}</h2>
 {% endif %}
 
-<div class="action">
+<div class="actions">
+  <div class="player">
+	<a href="#" class="play">Play</a>
+	<a href="#" class="stop">Stop</a>
+  </div>
   <a href="/_ah/nimda/upload">Upload&hellip;</a>
 </div>
 
@@ -37,6 +43,8 @@
   <td>Sample</td>
   <td>Type</td>
   <td class="size">Size</td>
+  <td>MIME</td>
+  <td><small>Random</small></td>
   <td>IP</td>
   <td>Created</td>
   <td>Actions</td>
@@ -44,18 +52,33 @@
 
 {% for s in samples %}
 <tr class="sample-{{ s.type }}">
-  <td><strong>{{ s.filename }}</strong></td>
+  <td>
+	<strong>{{ s.filename }}</strong>
+	<a href="{{ url }}?id={{ s.key().id() }}&amp;action=info">?</a>
+  </td>
   <td>{{ s.type }}</td>
   <td class="size" title="{{ s.size }}">{{ s.size }}</td>
+  <td>{{ s.mime }}</td>
+  <td><small>{{ s.rnd }}</small></td>
   <td><small>{{ s.ip }}</small></td>
   <td><small>{{ s.created|datetime }}</small></td>
   <td>
 	<a href="{{ url }}?id={{ s.key().id() }}&amp;action=del">delete</a>
-	<a href="{{ url }}?id={{ s.key().id() }}&amp;action=listen">listen</a>
+	<a href="{{ url }}?id={{ s.key().id() }}&amp;action=listen"
+	   class="player-load" data-player-src="{{ url }}?id={{ s.key().id() }}&amp;action=listen">listen</a>
   </td>
 </tr>
 {% endfor %}
   </table>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/js/jquery-1.6.4.min.js">\x3C/script>')</script>
+  <script src="/js/player.js"></script>
+  <script>
+	(function ($) {
+	$('.player').player({ loaders: '.player-load' });
+	}(jQuery));
+  </script>
 
 </body>
 </html>

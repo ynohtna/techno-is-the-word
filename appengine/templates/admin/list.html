@@ -21,6 +21,7 @@
   <td>Updated</td>
   <td><a href="?sort=requested">Requested</a></td>
   <td>IP</td>
+  <td>Payload</td>
 </thead>
 
 {% for w in words %}
@@ -34,6 +35,7 @@
   <td><small>{{ w.updated|datetime }}</small></td>
   <td><small>{{ w.requested|datetime }}</small></td>
   <td>{{ w.ip }}</td>
+  <td><small>{{ w.payload }}</small></td>
 </tr>
 {% endfor %}
   </table>

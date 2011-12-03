@@ -16,6 +16,7 @@ class Sample(db.Model):
 
     filename = db.StringProperty(default = 'unknown')
     size = db.IntegerProperty(default = 0)
+    mime = db.StringProperty(default = 'unknown')
 
     @classmethod
     def new(cls, *args, **kwargs):

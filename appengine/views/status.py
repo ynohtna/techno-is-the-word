@@ -53,7 +53,8 @@ def status_update(input_word, last_state, ip = None):
                 actual_state = s.state
     else:
         # Kick off processing.
-        txt = ['working...']
+        txt = ['working...',
+               'bonus karma\nearnt for\nvirgin word!']
         process_deferred(clean_word)
 
     if last_state >= actual_state:
