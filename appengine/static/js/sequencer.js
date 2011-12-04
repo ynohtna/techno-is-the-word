@@ -50,6 +50,8 @@
 		samples_per_tick = 5000,
 		ms_per_tick = 18000,
 
+		last_draw = -100,
+
 		start = 0,		// ms
 		now = 0,		// ms
 		last_tick = 0,	// ms
@@ -138,6 +140,25 @@
 			return 'rgb(' + rgb['red'] + ',' + rgb['green'] + ',' + rgb['blue'] + ')';
 		},
 
+		// ============================================================
+		render = function (chans, now) {
+			for (var i = 0, l = chans.length, chan; i < l; i++) {
+				chan = chans[i];
+				var ytop = oy + (i * gy),
+				ybot = ytop + (rows * gy) / l,
+				time_since_hit = now - chan.last_hit,
+				h = (i / l), s = 0.7, v;
+				if (time_since_hit >= 0) {
+					v = 0;
+				} else if (time_since_hit > -50) {
+					v = time_since_hit / -50.0;
+				}
+//				console.log('now: ' + now + ', time since last hit: ' + time_since_hit);
+				ctx.fillStyle = mk_hsv(h, s, v);
+				ctx.fillRect(ox, ytop, cols * gx, ybot - ytop);
+			}
+		},
+
 		// ------------------------------------------------------------
 		// Audio stuff.
 		chans = [],
@@ -172,6 +193,7 @@
 			}
 			voice.noteOn(when / 1000.0);
 			console.log(chan.index + ': ' + hit + ' - ' + when);
+			chan.last_hit = when - start;
 		},
 
 		advance_channels = function (trigger_time) {
@@ -200,7 +222,10 @@
 
 				advance_channels(trigger_time);
 			}
-			// If time since last draw has exceeded threshold, perform a render.
+			if (now - last_draw > opts.frame_interval) {
+				render(chans, now);
+				last_draw = now;
+			}
 			if (state == 'playing') {
 				setTimeout(tick, 0);
 			}
@@ -308,6 +333,7 @@
 					grace: chan.grace || 0.1,
 					pat: chan.pat || 'X...',
 					pos: 0,
+					last_hit: -1,
 					len: chan.pat.length,
 					last_trigger: -1
 				});
