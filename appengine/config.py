@@ -27,7 +27,7 @@ SETTINGS = {
     'MEMCACHE_LONG': (1 * HOURS),
     'MEMCACHE_DAY': (24 * HOURS),
 
-    'DJANGO_VER': '0.96',
+    'DJANGO_VER': '1.2',
     'APP_ID': application_id,
     'APP_FULL_VERSION_ID': full_version_id,
     'APP_VERSION_ID': version_id

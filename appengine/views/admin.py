@@ -57,6 +57,8 @@ class Samples(view.Handler, blobstore_handlers.BlobstoreDownloadHandler):
         action = self.request.get('action', None)
         if action:
             message = self.do_action(action)
+            if not message:
+                return
 
         samples = self.all_samples()
 
@@ -71,7 +73,10 @@ class Samples(view.Handler, blobstore_handlers.BlobstoreDownloadHandler):
     def do_del(self, sid):
         s = self.get_sample(sid)
         if s:
-            s.data.delete()
+            if s.data:
+                s.data.delete()
+            if s.processed:
+                s.processed.delete()
             s.delete()
             return "Deleted %s [%s]" % (s.filename, s.type)
 
@@ -80,7 +85,8 @@ class Samples(view.Handler, blobstore_handlers.BlobstoreDownloadHandler):
     def do_listen(self, sid):
         s = self.get_sample(sid)
         if s:
-            return self.send_blob(s.data)
+            self.send_blob(s.data)
+            return None
 
         return "Unknown sample ID %s" % sid
 
@@ -92,17 +98,12 @@ class Samples(view.Handler, blobstore_handlers.BlobstoreDownloadHandler):
 
         blob_reader = blobstore.BlobReader(s.data, buffer_size = 1048576)
 
-        import wave
-        wav = wave.open(blob_reader, 'rb')
+        from lib.wav_tools import normalized_wav, write_wav
+        normal = normalized_wav(blob_reader)
 
-        properties = '%s: %i channels, %i bytes per sample, %i sample rate, %i frames' \
-            % (s.filename,
-               wav.getnchannels(), wav.getsampwidth(),
-               wav.getframerate(), wav.getnframes())
+#        s.processed = write_wav(normal['mono'])
 
-        blob_reader.close()
-
-        dbg()
+        properties = normal['properties']
 
         return properties
 
@@ -151,7 +152,7 @@ class Upload(view.Handler, blobstore_handlers.BlobstoreUploadHandler):
 
 
 # ============================================================
-from django.utils import simplejson
+import json
 from google.appengine.ext import db
 
 class Tune(db.Model):
@@ -166,7 +167,7 @@ class Tune(db.Model):
     def new(cls, id, dict, *args, **kwargs):
         return Tune.get_or_insert(id,
                                   echo_id = id,
-                                  json = simplejson.dumps(dict),
+                                  json = json.dumps(dict),
                                   *args, **kwargs)
 
     @classmethod
@@ -191,7 +192,7 @@ class FetchTechno(view.Handler):
                      title = t['title'])
             index += 1
 
-        return simplejson.dumps(tracks)
+        return json.dumps(tracks)
 
 
 class FilterTechno(view.Handler):
@@ -213,7 +214,7 @@ class FilterTechno(view.Handler):
             t = Tune.exists(id) if id else None
 
             if t:
-                t.asset_info = simplejson.dumps(a)
+                t.asset_info = json.dumps(a)
                 audio_assets.append('[%s] %s - %s' % (id, t.artist, t.title))
             else:
                 audio_assets.append('*** %s ***' % id)

@@ -21,9 +21,15 @@ def process(clean_word):
     # Dispatch word to appropriate processing stage.
     if state < 10:
         analyse.analyse(w, state)
+    elif state < 20:
+        generate.generate(w, state)
+    elif state < 30:
+        # Select sounds.
+        patcher.patch(w, state)
     else:
-        # Temporary forced early out.
-        return
+        # Completion state!
+        state = 808
+
 
     # Persist latest word payload if needed.
     w.persist_payload()

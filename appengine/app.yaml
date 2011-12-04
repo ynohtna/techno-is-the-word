@@ -1,9 +1,21 @@
 application: techno-is-the-word
 version: 2-live
-runtime: python
+runtime: python27
 api_version: 1
+threadsafe: false
 
 default_expiration: 1d
+
+libraries:
+- name: numpy
+  version: latest
+- name: jinja2
+  version: latest
+- name: markupsafe
+  version: latest
+- name: setuptools
+  version: latest
+
 
 # ----------------------------------------
 skip_files:
@@ -77,7 +89,7 @@ handlers:
 
 # Admin pages.
 - url: /_ah/nimda/.*
-  script: admin.py
+  script: admin.application
   login: admin
 
 - url: /_ah/remote_api
@@ -85,7 +97,7 @@ handlers:
   login: admin
 
 - url: /_ah/warmup
-  script: admin.py
+  script: admin.application
   login: admin
 
 - url: /_ah/stats.*
@@ -106,4 +118,4 @@ handlers:
 
 # Main site.
 - url: /.*
-  script: main.py
+  script: main.application

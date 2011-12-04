@@ -1,8 +1,8 @@
-import logging
+import logging, random
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
 
-from django.utils import simplejson
+import json
 
 
 # ============================================================
@@ -17,6 +17,8 @@ class Word(db.Expando):
 
     payload = db.TextProperty(default = '{}')
 
+    rngvec = db.ListProperty(int)
+
     _dict = None
     _dirty = False
 
@@ -30,14 +32,23 @@ class Word(db.Expando):
         return '/result/%s' % self.word()
 
     # ----------------------------------------
+    def get_rng(index = 0):
+        if rngvec:
+            seed = rngvec[index % len(rngvec)] + index
+        else:
+            seed = index
+        rng = random.WichmannHill(seed)
+        return rng
+
+    # ----------------------------------------
     def unpack_payload(self):
         if self._dict:
             return
-        self._dict = simplejson.loads(self.payload)
+        self._dict = json.loads(self.payload)
 
     def persist_payload(self, force_persist = False):
         if (self._dirty or force_persist) and self._dict:
-            self.payload = simplejson.dumps(self._dict)
+            self.payload = json.dumps(self._dict)
             logging.info('PERSISTING PAYLOAD for %s' % self.word())
             self.put()
 

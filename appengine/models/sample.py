@@ -2,6 +2,7 @@ import logging
 from google.appengine.ext import db
 from google.appengine.ext import blobstore
 
+
 # ============================================================
 class Sample(db.Model):
     rnd = db.FloatProperty()
@@ -13,6 +14,7 @@ class Sample(db.Model):
     notes = db.StringProperty(default = '')
 
     data = blobstore.BlobReferenceProperty()
+    processed = blobstore.BlobReferenceProperty()
 
     filename = db.StringProperty(default = 'unknown')
     size = db.IntegerProperty(default = 0)

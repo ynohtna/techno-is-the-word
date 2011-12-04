@@ -6,7 +6,7 @@ from models import *
 
 from process.process import process_deferred
 
-from django.utils import simplejson
+import json
 import urllib
 
 
@@ -85,7 +85,7 @@ class Status(view.Handler):
             # No change.
             return self.response.set_status(304)
         else:
-            self.response.out.write(simplejson.dumps(output))
+            self.response.out.write(json.dumps(output))
 
     def post(self, word):
         return self.handle(word)

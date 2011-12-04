@@ -31,7 +31,7 @@
 		player = document.createElement('audio'),
 		$player = $(player),
 
-		play = function () {
+		play = function (e) {
 			if (!playing && src) {
 				$player.attr('src', src);
 				console.log('PLAYING! ' + src);

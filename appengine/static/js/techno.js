@@ -19,7 +19,8 @@
 			bg: '#000',
 			alt: '#ff0',
 			alt1: '#fe0',
-			alt2: '#f0f'
+			alt2: '#f0f',
+			alt3: '#808'
 		},
 		opts = $.extend({}, defaults, options),
 		self = this.get(0),
@@ -44,6 +45,7 @@
 		},
 
 		process_opts = {
+			alt: 3,
 			carriage_return: true,
 			clear_line: true,
 			runon: true,

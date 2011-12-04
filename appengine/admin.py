@@ -20,19 +20,7 @@ routes = [
 
 
 # ============================================================
-def main():
-    # Setup AppEngine.
-    from google.appengine.dist import use_library
-    use_library('django', config.SETTINGS['DJANGO_VER'])
+import webapp2
 
-    # Setup application.
-    application = webapp.WSGIApplication(routes, debug = config.SETTINGS['ON_DEV'])
-
-    # Go!
-    from google.appengine.ext.webapp.util import run_wsgi_app
-    run_wsgi_app(application)
-
-
-# ============================================================
-if __name__ == "__main__":
-    main()
+# Setup application.
+application = webapp2.WSGIApplication(routes, debug = config.SETTINGS['ON_DEV'])
