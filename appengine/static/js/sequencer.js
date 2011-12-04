@@ -20,7 +20,8 @@
 			nyquist: 22050,
 			bufsize: 1024,
 
-			preroll: 200,	// ms
+			preroll: 50,		// ms
+			frame_interval: 40,	// ms
 
 			bg: '#000',
 			fg: '#fff'
@@ -68,7 +69,7 @@
 			ctx.fillStyle = opts.bg;
 			ctx.globalCompositeOperation = 'src-over';
 //			ctx.globalAlpha = 0.2;
-			ctx.fillRect(0, 0, cvsw, cvsh);
+//			ctx.fillRect(0, 0, cvsw, cvsh);
 			ctx.fillStyle = opts.fg;
 
 			while (cols * (gx + 1) < cvsw && rows * (gy + 1) < cvsh) {
@@ -78,6 +79,66 @@
 			ox = Math.floor((cvsw - (cols * gx)) / 2);
 			oy = Math.floor((cvsh - (rows * gy)) / 2);
 			console.log('gx: ' + gx + ', gy: ' + gy + ', ox: ' + ox + ', oy: ' + oy);
+		},
+
+		// ------------------------------------------------------------
+		// Helper stuff.
+		random = function (min, max) {
+			return min + (Math.random() * (max - min));
+		},
+
+		hsv2rgb = function (h, s, v) {
+			// Adapted from http://www.easyrgb.com/math.html
+			// hsv values = 0 - 1, rgb values = 0 - 255
+			var r, g, b, var_r, var_g, var_b,
+			RGB = new Array();
+			if (s == 0){
+				RGB['red'] = RGB['green'] = RGB['blue'] = Math.round(v * 255);
+			} else {
+				// h must be < 1
+				var var_h = h * 6;
+				if (var_h==6) var_h = 0;
+				//Or ... var_i = floor( var_h )
+				var var_i = Math.floor( var_h );
+				var var_1 = v*(1-s);
+				var var_2 = v*(1-s*(var_h-var_i));
+				var var_3 = v*(1-s*(1-(var_h-var_i)));
+				if(var_i==0){ 
+					var_r = v; 
+					var_g = var_3; 
+					var_b = var_1;
+				}else if(var_i==1){ 
+					var_r = var_2;
+					var_g = v;
+					var_b = var_1;
+				}else if(var_i==2){
+					var_r = var_1;
+					var_g = v;
+					var_b = var_3
+				}else if(var_i==3){
+					var_r = var_1;
+					var_g = var_2;
+					var_b = v;
+				}else if (var_i==4){
+					var_r = var_3;
+					var_g = var_1;
+					var_b = v;
+				}else{ 
+					var_r = v;
+					var_g = var_1;
+					var_b = var_2;
+				}
+				//rgb results = 0 ÷ 255  
+				RGB['red']=Math.round(var_r * 255);
+				RGB['green']=Math.round(var_g * 255);
+				RGB['blue']=Math.round(var_b * 255);
+			}
+			return RGB;
+		},
+
+		mk_hsv = function (hue, sat, val) {
+			var rgb = hsv2rgb(hue, sat, val);
+			return 'rgb(' + rgb['red'] + ',' + rgb['green'] + ',' + rgb['blue'] + ')';
 		},
 
 		// ------------------------------------------------------------
@@ -121,14 +182,13 @@
 			while (last_tick < now + opts.preroll) {
 				trigger_time = last_tick + start;
 
-				// If time since last draw has exceeded threshold, perform a render.
-
 				// Advance time by a tick.
 				last_tick += ms_per_tick;
 				tick_count++;
 
 				advance_channels(trigger_time);
 			}
+			// If time since last draw has exceeded threshold, perform a render.
 			if (state == 'playing') {
 				setTimeout(tick, 0);
 			}
@@ -139,7 +199,10 @@
 				return;
 			}
 			state = 'playing';
-			start = (1000 * actx.currentTime) + opts.preroll;
+			start = 1000 * actx.currentTime;
+			last_tick = 0;
+			tick_count = 0;
+			console.log('start: ' + start);
 			tick();
 		},
 		stop = function () {
@@ -175,16 +238,41 @@
 
 				console.log('LOADED ' + url + ' into channel ' + chan_idx)
 				if (all_loaded()) {
-					play();
+					state = 'ready-to-play';
 				}
 			}
 			xhr.send();
 		},
 
+		loady = 0,
+		loading_anim = function () {
+			if (state != 'loading') {
+				ctx.clearRect(0, 0, cvsw, cvsh);
+				play();
+			} else {
+				var width = random(gy, gy * 3),
+				hue = Math.floor(random(0, 8)) / 8.0,
+				val = random(0.5, 1.0),
+				clr = mk_hsv(hue, 0.8, val);
+
+				console.log(clr);
+
+				ctx.fillStyle = clr;
+				ctx.fillRect(ox, oy + loady, gx * cols, width);
+
+				loady += random(0, gy * 2);
+				if (loady > cvsh) {
+					loady = 0;
+				}
+
+				setTimeout(loading_anim, opts.frame_interval);
+			}
+		},
+
 		reset = function (data) {
 			chans = [];
 			frame = 0;
-			state = 'loading';
+			loady = 0;
 
 			bpm = data.bpm || 128;
 			samples_per_tick = (opts.srate * 60) / (bpm * ticks_per_beat);
@@ -209,6 +297,9 @@
 				});
 				load_sample(i, chan.sound);
 			}
+
+			state = 'loading';
+			loading_anim();
 		};
 
 		// ------------------------------------------------------------
