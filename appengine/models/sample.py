@@ -25,5 +25,16 @@ class Sample(db.Model):
         from random import random
         return cls(rnd = random(), *args, **kwargs)
 
+    @classmethod
+    def choose_random(cls, type, rnd):
+        '''rnd is [0..1]'''
+        s = Sample.all().order('rnd').filter('rnd >=', rnd).get()
+        if s == None:
+            s = Sample.all().order('rnd').filter('rnd <', rnd).get()
+        return s
+
+    def serve_url(self):
+        return '/sample/%i' % self.key().id()
+
 
 # ============================================================

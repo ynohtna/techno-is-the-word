@@ -2,10 +2,15 @@
 {% extends "base.html" %}
 
 {% block body %}
-<canvas id="canvas">
+<div id="canvasContainer">
+<canvas id="canvasLog">
   <p>Your browser needs to support HTML5 canvas for this, comrade.</p>
   <p>Techno requires technology, you dig?</p>
 </canvas>
+<canvas id="canvasSeq">
+</canvas>
+<div id="cursorCapture"></div>
+</div>
 {% endblock %}
 
 {% block footerScript %}
@@ -14,9 +19,11 @@
 <script src="/js/display.js?v={{ now }}"></script>
 <script src="/js/font.js?v={{ now }}"></script>
 <script src="/js/techno.js?v={{ now }}"></script>
+<script src="/js/sequencer.js?v={{ now }}"></script>
 <script>
 (function ($) {
-  $('#canvas').techno({
+  var s = $('#canvasSeq').sequencer();
+  $('#canvasLog').techno({
 	fg: '#80a572',
 	hi: '#f0fff1',
     bg: '#171c16',
@@ -24,7 +31,8 @@
 	alt1: '#debf22',
 	alt2: '#de6d22',
 	alt3: '#404532',
-	cur: '#fe8800'
+	cur: '#fe8800',
+	seq: s
   });
 }(jQuery));
 </script>

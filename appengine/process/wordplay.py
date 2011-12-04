@@ -50,6 +50,8 @@ def scores(w):
     prior_diff = 128
     rngs = []
 
+# TODO: repetition of kars consecutively as well as within words.
+
     for kar in word:
         idx = ord(kar)
         ascii_sum += idx

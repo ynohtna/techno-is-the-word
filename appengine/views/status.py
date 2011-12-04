@@ -27,8 +27,9 @@ def status_update(input_word, last_state, ip = None):
             last_state = -1
 
     if last_state >= 0 and not status.has_fresh_state(clean_word, last_state):
-        logging.info('State UNCHANGED for %s [%i]' % (clean_word, last_state))
-        return False
+        if last_state < 808:
+            logging.info('State UNCHANGED for %s [%i]' % (clean_word, last_state))
+            return False
 
     # Look up word and it's associated status.
     w, new = word.get_word(clean_word, ip = ip)
@@ -38,7 +39,8 @@ def status_update(input_word, last_state, ip = None):
 
     result = None
     if w.completed():
-         result = w.result_url()
+        logging.info('WORD HAS RESULT!')
+        result = w.result
 
     actual_state = 0
     txt = []
@@ -57,7 +59,7 @@ def status_update(input_word, last_state, ip = None):
                'bonus karma\nearnt for\nvirgin word!']
         process_deferred(clean_word)
 
-    if last_state >= actual_state:
+    if last_state >= actual_state and last_state < 808:
         # No change.
         return False
 

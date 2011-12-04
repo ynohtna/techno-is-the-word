@@ -11,7 +11,7 @@ class Word(db.Expando):
     requested = db.DateTimeProperty(auto_now_add = True)
     updated = db.DateTimeProperty(auto_now = True)
 
-    result = blobstore.BlobReferenceProperty()
+    result = db.TextProperty()
 
     ip = db.StringProperty(default = '?')
 
@@ -28,17 +28,18 @@ class Word(db.Expando):
     def completed(self):
         return self.result != None
 
-    def result_url(self):
-        return '/result/%s' % self.word()
-
     # ----------------------------------------
-    def get_rng(index = 0):
-        if rngvec:
-            seed = rngvec[index % len(rngvec)] + index
+    def get_rng(self, index = 0):
+        if self.rngvec:
+            seed = self.rngvec[index % len(self.rngvec)] + index
         else:
             seed = index
         rng = random.WichmannHill(seed)
         return rng
+
+    # ----------------------------------------
+    def set_result(self, result = None):
+        self.result = json.dumps(result)
 
     # ----------------------------------------
     def unpack_payload(self):
@@ -98,7 +99,7 @@ def all_words(alphabetic = False):
                 'status': state,
                 'requested': w.requested,
                 'updated': w.updated,
-                'complete': w.result_url() if w.completed() else None,
+                'complete': w.result if w.completed() else None,
                 'ip': w.ip,
                 'payload': w.payload
                 })

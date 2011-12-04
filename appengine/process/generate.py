@@ -12,9 +12,10 @@ def generate(w, state):
     logging.info('GENERATING %s' % word)
 
     if state < 12:
-        txt = patterns.kick_pattern(w)
+        txt = patterns.make_kick_patterns(w)
         state = 14
     elif state < 15:
-        txt = patterns.coalesce(w)
+        txt = patterns.coalesce_and_choose_sounds(w, state)
+        state = 808
 
     set_status(word, state, txt)

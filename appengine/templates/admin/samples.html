@@ -53,6 +53,7 @@
 {% for s in samples %}
 <tr class="sample-{{ s.type }}">
   <td>
+	{{ s.key().id() }}
 	<strong>{{ s.filename }}</strong>
 	<a href="{{ url }}?id={{ s.key().id() }}&amp;action=info">?</a>
   </td>

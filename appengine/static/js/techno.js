@@ -20,11 +20,14 @@
 			alt: '#ff0',
 			alt1: '#fe0',
 			alt2: '#f0f',
-			alt3: '#808'
+			alt3: '#808',
 		},
 		opts = $.extend({}, defaults, options),
 		self = this.get(0),
 		$self = $(self),
+
+		container = $self.parent(),
+		$container = $(container),
 
 		word ='',
 		word_state = -1,
@@ -32,6 +35,7 @@
 		nada_count = 0,
 
 		T = TECHNO,
+		S = opts.seq,
 
 		// ----------------------------------------
 		punctuation_lookup = ':=,-.',
@@ -88,6 +92,14 @@
 		},
 
 		// ----------------------------------------
+		seq_data = null,
+		start_player = function() {
+			console.log('start_player');
+			console.log(seq_data);
+			$container.addClass('sequencer-ready');
+		},
+
+		// ----------------------------------------
 		restart_input = function () {
 			// Restart input cycle.
 			nada_count = 0;
@@ -141,10 +153,22 @@
 						console.log(response.txt);
 
 						if (response.result) {
-							state = 'done';
+							try {
+								seq_data = $.parseJSON(response.result);
+							} catch (e) {
+								console.log('BAD JSON! ' + response.result);
+							}
+							state = 'seq-ready';
 							T.print('\n--==~~~~==--', { alt: false });
 							T.print('! finished !', { alt: true })
 							T.print('--==~~~~==--', { alt: false });
+							T.push_event('start_player');
+							T.print('\n\n\n\n\n\n\n');
+							T.print('\n--==~~~~==--', { alt: false });
+							T.print('  click to', { alt: true });
+							T.print('    play', { alt: true });
+							T.print('--==~~~~==--\n\n', { alt: false });
+							return;
 						}
 					} else if (xhr.status == 304) {
 						nada_count += 1;
@@ -258,9 +282,24 @@
 			start_input();
 		});
 		$self.bind('start_polling', start_polling);
+		$self.bind('start_player', start_player);
 
 		// Capture keyboard input.
 		$(document).keydown(keydown);
+		$container.bind('click', function (e) {
+			if ($container.hasClass('sequencer-ready')) {
+				console.log('STARTING SEQUENCER!');
+				e.preventDefault();
+				$container.removeClass('sequencer-ready').addClass('sequencer');
+				state = 'seq';
+				S.reset(seq_data);
+			} else if ($container.hasClass('sequencer')) {
+				S.stop();
+				$container.removeClass('sequencer');
+				T.print('\n thank you!\n\n\n\n\n\n\n');
+				T.print('word:', { event: 'display', params: 'start_input' });
+			}
+		});
 
 		// Initialise display module.
 		T.display_init(self, opts);

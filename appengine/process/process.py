@@ -23,9 +23,6 @@ def process(clean_word):
         analyse.analyse(w, state)
     elif state < 20:
         generate.generate(w, state)
-    elif state < 30:
-        # Select sounds.
-        patcher.patch(w, state)
     else:
         # Completion state!
         state = 808

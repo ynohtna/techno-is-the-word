@@ -41,9 +41,32 @@ footer {
 	border-top: 1px solid #111711;
 }
 
-canvas {
+#canvasContainer {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+#canvasLog,
+#canvasSeq {
+	position: absolute;
 	width: 100%;
 	height: 100%;
 	image-rendering: -moz-crisp-edges;
 	image-rendering: -webkit-optimize-contrast;
+}
+
+#cursorCapture {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+.sequencer #cursorCapture,
+.sequencer-ready #cursorCapture {
+	cursor: pointer;
+}
+#canvasSeq {
+	display: none;
+}
+.sequencer #canvasSeq {
+	display: block;
 }
