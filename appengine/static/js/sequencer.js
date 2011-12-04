@@ -147,7 +147,7 @@
 				var ytop = oy + (i * gy),
 				ybot = ytop + (rows * gy) / l,
 				time_since_hit = now - chan.last_hit,
-				h = (i / l), s = 0.7, v;
+				h = (i / l), s = chan.last_vel, v;
 				if (time_since_hit >= 0) {
 					v = 0;
 				} else if (time_since_hit > -50) {
@@ -183,17 +183,21 @@
 			if (!chan) {
 				return;
 			}
-			var voice;
+			var voice, vel;
 			if (hit == 'x') {
-				voice = get_voice(chan, 'soft-voice', chan.soft);
+				vel = chan.soft;
+				voice = get_voice(chan, 'soft-voice', vel);
 			} else if (hit == '-') {
-				voice = get_voice(chan, 'grace-voice', chan.grace);
+				vel = chan.grace;
+				voice = get_voice(chan, 'grace-voice', vel);
 			} else {
-				voice = get_voice(chan, 'hard-voice', chan.hard);
+				vel = chan.hard;
+				voice = get_voice(chan, 'hard-voice', vel);
 			}
 			voice.noteOn(when / 1000.0);
 			console.log(chan.index + ': ' + hit + ' - ' + when);
 			chan.last_hit = when - start;
+			chan.last_vel = vel;
 		},
 
 		advance_channels = function (trigger_time) {
@@ -334,6 +338,7 @@
 					pat: chan.pat || 'X...',
 					pos: 0,
 					last_hit: -1,
+					last_vel: 0.5,
 					len: chan.pat.length,
 					last_trigger: -1
 				});
