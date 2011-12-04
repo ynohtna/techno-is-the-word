@@ -34,6 +34,7 @@
 		ctx = null,
 		cvsw = 0,
 		cvsh = 0,
+		chanh = 1,
 
 		rows = 8,
 		cols = 16,
@@ -123,7 +124,7 @@
 					var_r = var_3;
 					var_g = var_1;
 					var_b = v;
-				}else{ 
+				}else{
 					var_r = v;
 					var_g = var_1;
 					var_b = var_2;
@@ -144,8 +145,7 @@
 		render = function (chans, now) {
 			for (var i = 0, l = chans.length, chan; i < l; i++) {
 				chan = chans[i];
-				var ytop = oy + (i * gy),
-				ybot = ytop + (rows * gy) / l,
+				var ytop = i * chanh,
 				time_since_hit = now - chan.last_hit,
 				h = (i / l), s = chan.last_vel, v;
 				if (time_since_hit >= 0) {
@@ -155,7 +155,7 @@
 				}
 //				console.log('now: ' + now + ', time since last hit: ' + time_since_hit);
 				ctx.fillStyle = mk_hsv(h, s, v);
-				ctx.fillRect(ox, ytop, cols * gx, ybot - ytop);
+				ctx.fillRect(ox, ytop, cols * gx, chanh);
 			}
 		},
 
@@ -195,7 +195,7 @@
 				voice = get_voice(chan, 'hard-voice', vel);
 			}
 			voice.noteOn(when / 1000.0);
-			console.log(chan.index + ': ' + hit + ' - ' + when);
+//			console.log(chan.index + ': ' + hit + ' - ' + when);
 			chan.last_hit = when - start;
 			chan.last_vel = vel;
 		},
@@ -242,6 +242,7 @@
 			state = 'playing';
 			start = 1000 * actx.currentTime;
 			last_tick = 0;
+			last_draw = -100,
 			tick_count = 0;
 			console.log('start: ' + start);
 			tick();
@@ -291,12 +292,12 @@
 				ctx.clearRect(0, 0, cvsw, cvsh);
 				play();
 			} else {
-				var width = random(gy, gy * 3),
+				var width = random(gy, gy * 2),
 				hue = Math.floor(random(0, 8)) / 8.0,
 				val = random(0.5, 1.0),
 				clr = mk_hsv(hue, 0.8, val);
 
-				console.log(clr);
+//				console.log(clr);
 
 				ctx.fillStyle = clr;
 				ctx.fillRect(ox, oy + loady, gx * cols, width);
@@ -306,7 +307,7 @@
 					loady = 0;
 				}
 
-				setTimeout(loading_anim, opts.frame_interval);
+				setTimeout(loading_anim, opts.frame_interval / 2);
 			}
 		},
 
@@ -344,6 +345,7 @@
 				});
 				load_sample(i, chan.sound);
 			}
+			chanh = cvsh / chans.length;
 
 			state = 'loading';
 			loading_anim();

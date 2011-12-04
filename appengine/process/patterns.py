@@ -61,6 +61,61 @@ def make_kick_patterns(w):
 
 
 # ============================================================
+def get_snare_cfg():
+    snare_rules = """
+SECTION -> MEASURE MEASURE MEASURE MEASURE
+MEASURE -> B4 | B2 B2 | B1 B1 B1 B1 | B2 B1 B1 | B1 B2 B1 | B1 B1 B2
+
+B4 -> ....X.......X...
+B4 -> ....X...-...X...
+B4 -> ..-.X...x...X.x.
+B4 -> ....X.....x...x.
+B4 -> ....X.........X.
+B4 -> ..x.X.....-...X.
+B4 -> ....X.--.--.X...
+B4 -> ....X.-x.-..X...
+
+B2 -> ....X...
+B2 -> ....x...
+B2 -> ...xX.-.
+B2 -> ........
+B2 -> ....-...
+B2 -> ..-.....
+B2 -> ..x.....
+B2 -> ......x.
+B2 -> ...-Xxx-
+B2 -> .--xX.-.
+
+B1 -> X... | .... | ..-. | X.x. | X..- | X.-. | ..x.
+
+"""
+    import StringIO
+    c = cfg.ContextFreeGrammar(StringIO.StringIO(snare_rules))
+
+    return c
+
+
+# ============================================================
+def make_snare_patterns(w):
+    cfg = get_snare_cfg()
+
+    pat0 = unicode(''.join(cfg.get_expansion('MEASURE')))
+    pat1 = unicode(''.join(cfg.get_expansion('MEASURE')))
+
+    pat = '%s%s%s%s' % (pat0, pat0, pat0, pat1)
+
+    w.set('sn_pat', pat)
+
+    pat = pat.replace('.', ' ').replace('X', '%').replace('x', '~')
+
+    text = 'snare:\n'
+    while len(pat):
+        text += '  ' + pat[:8] + '\n'
+        pat = pat[8:]
+
+    return text
+
+# ============================================================
 def reorder(seq, format = 'abcd'):
     span = len(seq) / 4
     a = seq[0:span]
@@ -76,6 +131,9 @@ def coalesce_and_choose_sounds(w, state):
         return min + (rng.random() * (max - min))
 
     chans = []
+
+    # ----------------------------------------
+    # Kick.
 
     k0 = w.get('kick_pat0')
     k1 = w.get('kick_pat1')
@@ -94,6 +152,24 @@ def coalesce_and_choose_sounds(w, state):
             'sound': ks.serve_url()
             })
 
+    # ----------------------------------------
+    # Snare.
+
+    sn = w.get('sn_pat')
+    w.set('chan1', sn)
+
+    ss = Sample.choose_random('sn', rng.random())
+    chans.append({
+            'bus': 'sn',
+            'label': 'sn',
+            'hard': rnd(0.6, 0.9),
+            'soft': rnd(0.2, 0.65),
+            'grace': rnd(0.1, 0.25),
+            'pat': sn,
+            'sound': ss.serve_url()
+            })
+
+    # ----------------------------------------
     w.set('channels', len(chans))
     w.set_result({
             'bpm': w.get('tempo'),
