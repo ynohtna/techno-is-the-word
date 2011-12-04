@@ -268,19 +268,27 @@
 			xhr.responseType = "arraybuffer";
 
 			xhr.onload = function () {
-				var buf = actx.createBuffer(xhr.response, true /* mix to mono*/),
-				voice = actx.createBufferSource(),
-				chan = chans[chan_idx];
+				try {
+					var buf = actx.createBuffer(xhr.response, true /* mix to mono*/),
+					voice = actx.createBufferSource(),
+					chan = chans[chan_idx];
 
-				chan.buf = buf;
-				voice.buffer = buf;
-				voice.connect(compressor);
-				chan.voice = voice;
-				chan.loading = false;
+					chan.buf = buf;
+					voice.buffer = buf;
+					voice.connect(compressor);
+					chan.voice = voice;
+					chan.loading = false;
 
-				console.log('LOADED ' + url + ' into channel ' + chan_idx)
-				if (all_loaded()) {
-					state = 'ready-to-play';
+					console.log('LOADED ' + url + ' into channel ' + chan_idx)
+					if (all_loaded()) {
+						state = 'ready-to-play';
+					}
+				} catch (e) {
+					console.log('FAILED TO LOAD SAMPLE FROM ' + url);
+//					load_sample(chan_idx, url + '?random');
+					chan.buf = null;
+					chan.voice = null;
+					chan.loading = false;
 				}
 			}
 			xhr.send();
