@@ -170,6 +170,9 @@
 		compressor = null,
 
 		get_voice = function (chan, which, vel) {
+			if (!chan.buf) {
+				return null;
+			}
 			var gain = actx.createGainNode(),
 			voice = actx.createBufferSource();
 			voice.buffer = chan.buf;
@@ -193,6 +196,9 @@
 			} else {
 				vel = chan.hard;
 				voice = get_voice(chan, 'hard-voice', vel);
+			}
+			if (!voice) {
+				return;
 			}
 			voice.noteOn(when / 1000.0);
 //			console.log(chan.index + ': ' + hit + ' - ' + when);
@@ -280,15 +286,16 @@
 					chan.loading = false;
 
 					console.log('LOADED ' + url + ' into channel ' + chan_idx)
-					if (all_loaded()) {
-						state = 'ready-to-play';
-					}
 				} catch (e) {
+					var chan = chans[chan_idx];
 					console.log('FAILED TO LOAD SAMPLE FROM ' + url);
 //					load_sample(chan_idx, url + '?random');
 					chan.buf = null;
 					chan.voice = null;
 					chan.loading = false;
+				}
+				if (all_loaded()) {
+					state = 'ready-to-play';
 				}
 			}
 			xhr.send();
@@ -374,7 +381,7 @@
 
 		abuf = actx.createBuffer(opts.chans, opts.bufsize, opts.srate);
 		master = actx.createGainNode();
-		master.gain.value = 0.7;
+		master.gain.value = 0.5;
 		master.connect(actx.destination);
 
 		if (actx.createDynamicsCompressor) {
