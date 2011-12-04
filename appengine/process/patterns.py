@@ -4,7 +4,6 @@ from lib.helpers import dbg
 
 
 # ============================================================
-@cash(ttl = 300)
 def get_kick_cfg():
     kick_rules = """
 SECTION -> MEASURE MEASURE MEASURE MEASURE
@@ -41,6 +40,7 @@ B1 -> X... | X..x | X.x.
 
     return c
 
+
 # ============================================================
 def make_kick_patterns(w):
     cfg = get_kick_cfg()
@@ -72,6 +72,8 @@ def chain(w, a, b):
 
 def coalesce_and_choose_sounds(w, state):
     rng = w.get_rng(state)
+    def rnd(min, max):
+        return min + (rng.random() * (max - min))
 
     chans = []
 
@@ -83,6 +85,11 @@ def coalesce_and_choose_sounds(w, state):
     from models.sample import Sample
     ks = Sample.choose_random('bd', rng.random())
     chans.append({
+            'bus': 'bd',
+            'label': 'bd',
+            'hard': 1.0,
+            'soft': rnd(0.7, 0.9),
+            'grace': rnd(0.01, 0.2),
             'pat': kick,
             'sound': ks.serve_url()
             })

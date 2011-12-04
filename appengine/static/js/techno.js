@@ -296,7 +296,7 @@
 			} else if ($container.hasClass('sequencer')) {
 				S.stop();
 				$container.removeClass('sequencer');
-				T.print('\n thank you!\n\n\n\n\n\n\n');
+				T.print('\n   thanks\n   for da\n    beat\n    bud!\n\n\n\n');
 				T.print('word:', { event: 'display', params: 'start_input' });
 			}
 		});

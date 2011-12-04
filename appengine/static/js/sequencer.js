@@ -88,26 +88,24 @@
 		},
 
 		hsv2rgb = function (h, s, v) {
-			// Adapted from http://www.easyrgb.com/math.html
-			// hsv values = 0 - 1, rgb values = 0 - 255
-			var r, g, b, var_r, var_g, var_b,
-			RGB = new Array();
+			var r, g, b, var_r, var_g, var_b, RGB = new Array();
 			if (s == 0){
 				RGB['red'] = RGB['green'] = RGB['blue'] = Math.round(v * 255);
 			} else {
 				// h must be < 1
 				var var_h = h * 6;
-				if (var_h==6) var_h = 0;
-				//Or ... var_i = floor( var_h )
-				var var_i = Math.floor( var_h );
+				if (var_h == 6) {
+					var_h = 0;
+				}
+				var var_i = Math.floor(var_h);
 				var var_1 = v*(1-s);
 				var var_2 = v*(1-s*(var_h-var_i));
 				var var_3 = v*(1-s*(1-(var_h-var_i)));
-				if(var_i==0){ 
-					var_r = v; 
-					var_g = var_3; 
+				if(var_i==0){
+					var_r = v;
+					var_g = var_3;
 					var_b = var_1;
-				}else if(var_i==1){ 
+				}else if(var_i==1){
 					var_r = var_2;
 					var_g = v;
 					var_b = var_1;
@@ -128,7 +126,6 @@
 					var_g = var_1;
 					var_b = var_2;
 				}
-				//rgb results = 0 ÷ 255  
 				RGB['red']=Math.round(var_r * 255);
 				RGB['green']=Math.round(var_g * 255);
 				RGB['blue']=Math.round(var_b * 255);
@@ -151,13 +148,28 @@
 		master = null,
 		compressor = null,
 
+		get_voice = function (chan, which, vel) {
+			var gain = actx.createGainNode(),
+			voice = actx.createBufferSource();
+			voice.buffer = chan.buf;
+			voice.connect(gain);
+			gain.gain.value = vel;
+			gain.connect(compressor);
+			return voice;
+		},
+
 		trigger = function (chan, hit, when) {
 			if (!chan) {
 				return;
 			}
-			var voice = actx.createBufferSource();
-			voice.buffer = chan.buf;
-			voice.connect(compressor);
+			var voice;
+			if (hit == 'x') {
+				voice = get_voice(chan, 'soft-voice', chan.soft);
+			} else if (hit == '-') {
+				voice = get_voice(chan, 'grace-voice', chan.grace);
+			} else {
+				voice = get_voice(chan, 'hard-voice', chan.hard);
+			}
 			voice.noteOn(when / 1000.0);
 			console.log(chan.index + ': ' + hit + ' - ' + when);
 		},
@@ -285,11 +297,15 @@
 			for (var i = 0, l = data.chans.length, chan; i < l; i++) {
 				chan = data.chans[i];
 				console.log(i + ': ' + chan.sound + '- ' + chan.pat);
+				console.log(chan);
 				chans.push({
 					index: i,
 					loading: true,
 					sample: chan.sound,
 					buf: null,
+					hard: chan.hard || 0.7,
+					soft: chan.soft || 0.4,
+					grace: chan.grace || 0.1,
 					pat: chan.pat || 'X...',
 					pos: 0,
 					len: chan.pat.length,
