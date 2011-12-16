@@ -1,8 +1,8 @@
-/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4 */
-/*global jQuery, setTimeout */
-"use strict";
+/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4, white: true */
+/*global jQuery, setTimeout, XMLHttpRequest, AudioContext, webkitAudioContext, alert */
 
 (function ($) {
+	"use strict";
 
 	$.fn.sequencer = function (options) {
 		if (this.length > 1) {
@@ -67,7 +67,7 @@
 			self.width = cvsw;
 			self.height = cvsh;
 
-			console.log('cvsw: ' + cvsw + ', cvsh: ' + cvsh);
+//			console.log('cvsw: ' + cvsw + ', cvsh: ' + cvsh);
 
 			ctx.fillStyle = opts.bg;
 			ctx.globalCompositeOperation = 'src-over';
@@ -81,7 +81,7 @@
 			}
 			ox = Math.floor((cvsw - (cols * gx)) / 2);
 			oy = Math.floor((cvsh - (rows * gy)) / 2);
-			console.log('gx: ' + gx + ', gy: ' + gy + ', ox: ' + ox + ', oy: ' + oy);
+//			console.log('gx: ' + gx + ', gy: ' + gy + ', ox: ' + ox + ', oy: ' + oy);
 		},
 
 		// ------------------------------------------------------------
@@ -91,63 +91,63 @@
 		},
 
 		hsv2rgb = function (h, s, v) {
-			var r, g, b, var_r, var_g, var_b, RGB = new Array();
-			if (s == 0){
-				RGB['red'] = RGB['green'] = RGB['blue'] = Math.round(v * 255);
+			var r, g, b, var_r, var_g, var_b, RGB = [],
+			var_h, var_i, var_1, var_2, var_3;
+			if (s === 0) {
+				RGB.red = RGB.green = RGB.blue = Math.round(v * 255);
 			} else {
 				// h must be < 1
-				var var_h = h * 6;
-				if (var_h == 6) {
-					var_h = 0;
-				}
-				var var_i = Math.floor(var_h);
-				var var_1 = v*(1-s);
-				var var_2 = v*(1-s*(var_h-var_i));
-				var var_3 = v*(1-s*(1-(var_h-var_i)));
-				if(var_i==0){
+				var_h = (h === 1) ? 0 : h * 6;
+				var_i = Math.floor(var_h);
+				var_1 = v*(1-s);
+				var_2 = v*(1-s*(var_h-var_i));
+				var_3 = v*(1-s*(1-(var_h-var_i)));
+				if (var_i === 0) {
 					var_r = v;
 					var_g = var_3;
 					var_b = var_1;
-				}else if(var_i==1){
+				} else if (var_i === 1) {
 					var_r = var_2;
 					var_g = v;
 					var_b = var_1;
-				}else if(var_i==2){
+				} else if (var_i === 2) {
 					var_r = var_1;
 					var_g = v;
-					var_b = var_3
-				}else if(var_i==3){
+					var_b = var_3;
+				} else if (var_i === 3) {
 					var_r = var_1;
 					var_g = var_2;
 					var_b = v;
-				}else if (var_i==4){
+				} else if (var_i === 4) {
 					var_r = var_3;
 					var_g = var_1;
 					var_b = v;
-				}else{
+				} else {
 					var_r = v;
 					var_g = var_1;
 					var_b = var_2;
 				}
-				RGB['red']=Math.round(var_r * 255);
-				RGB['green']=Math.round(var_g * 255);
-				RGB['blue']=Math.round(var_b * 255);
+				RGB.red = Math.round(var_r * 255);
+				RGB.green = Math.round(var_g * 255);
+				RGB.blue = Math.round(var_b * 255);
 			}
 			return RGB;
 		},
 
 		mk_hsv = function (hue, sat, val) {
 			var rgb = hsv2rgb(hue, sat, val);
-			return 'rgb(' + rgb['red'] + ',' + rgb['green'] + ',' + rgb['blue'] + ')';
+			return 'rgb(' + rgb.red + ',' + rgb.green + ',' + rgb.blue + ')';
 		},
 
 		// ============================================================
 		render = function (chans, now) {
-			for (var i = 0, l = chans.length, chan; i < l; i++) {
+			var i, l, chan, ytop, time_since_hit, h, v, s;
+			for (i = 0, l = chans.length; i < l; i++) {
 				chan = chans[i];
-				var ytop = i * chanh,
-				time_since_hit = now - chan.last_hit,
-				h = (i / l), s = chan.last_vel, v;
+				ytop = i * chanh;
+				time_since_hit = now - chan.last_hit;
+				h = (i / l);
+				s = chan.last_vel;
 				if (time_since_hit >= 0) {
 					v = 0;
 				} else if (time_since_hit > -50) {
@@ -173,12 +173,10 @@
 			if (!chan.buf) {
 				return null;
 			}
-			var gain = actx.createGainNode(),
-			voice = actx.createBufferSource();
+			var voice = actx.createBufferSource();
 			voice.buffer = chan.buf;
-			voice.connect(gain);
-			gain.gain.value = vel;
-			gain.connect(compressor);
+			voice.connect(compressor);
+			voice.gain.value = vel;
 			return voice;
 		},
 
@@ -187,10 +185,10 @@
 				return;
 			}
 			var voice, vel;
-			if (hit == 'x') {
+			if (hit === 'x') {
 				vel = chan.soft;
 				voice = get_voice(chan, 'soft-voice', vel);
-			} else if (hit == '-') {
+			} else if (hit === '-') {
 				vel = chan.grace;
 				voice = get_voice(chan, 'grace-voice', vel);
 			} else {
@@ -207,14 +205,15 @@
 		},
 
 		advance_channels = function (trigger_time) {
-			for (var i = 0, l = chans.length, chan, hit; i < l; i++) {
+			var i, l, chan, hit;
+			for (i = 0, l = chans.length; i < l; i++) {
 				chan = chans[i];
 				chan.pos++;
 				if (chan.pos >= chan.len) {
 					chan.pos = 0;
 				}
 				hit = chan.pat[chan.pos];
-				if (hit != '.' && hit != ' ') {
+				if (hit !== '.' && hit !== ' ') {
 					trigger(chan, hit, trigger_time);
 				}
 			}
@@ -236,21 +235,21 @@
 				render(chans, now);
 				last_draw = now;
 			}
-			if (state == 'playing') {
+			if (state === 'playing') {
 				setTimeout(tick, 0);
 			}
 		},
 
 		play = function () {
-			if (state == 'playing') {
+			if (state === 'playing') {
 				return;
 			}
 			state = 'playing';
 			start = 1000 * actx.currentTime;
 			last_tick = 0;
-			last_draw = -100,
+			last_draw = -100;
 			tick_count = 0;
-			console.log('start: ' + start);
+//			console.log('start: ' + start);
 			tick();
 		},
 		stop = function () {
@@ -259,7 +258,8 @@
 
 		// ------------------------------------------------------------
 		all_loaded = function () {
-			for (var i = 0, l = chans.length, chan; i < l; i++) {
+			var i, l, chan;
+			for (i = 0, l = chans.length; i < l; i++) {
 				chan = chans[i];
 				if (chan.loading) {
 					return false;
@@ -269,14 +269,14 @@
 		},
 
 		load_sample = function (chan_idx, url) {
-			var xhr = new XMLHttpRequest();
+			var xhr = new XMLHttpRequest(), buf, voice, chan;
 			xhr.open("GET", url, true);
 			xhr.responseType = "arraybuffer";
 
 			xhr.onload = function () {
 				try {
-					var buf = actx.createBuffer(xhr.response, true /* mix to mono*/),
-					voice = actx.createBufferSource(),
+					buf = actx.createBuffer(xhr.response, true /* mix to mono*/);
+					voice = actx.createBufferSource();
 					chan = chans[chan_idx];
 
 					chan.buf = buf;
@@ -285,10 +285,10 @@
 					chan.voice = voice;
 					chan.loading = false;
 
-					console.log('LOADED ' + url + ' into channel ' + chan_idx)
+//					console.log('LOADED ' + url + ' into channel ' + chan_idx)
 				} catch (e) {
-					var chan = chans[chan_idx];
-					console.log('FAILED TO LOAD SAMPLE FROM ' + url);
+					chan = chans[chan_idx];
+//					console.log('FAILED TO LOAD SAMPLE FROM ' + url);
 //					load_sample(chan_idx, url + '?random');
 					chan.buf = null;
 					chan.voice = null;
@@ -297,13 +297,13 @@
 				if (all_loaded()) {
 					state = 'ready-to-play';
 				}
-			}
+			};
 			xhr.send();
 		},
 
 		loady = 0,
 		loading_anim = function () {
-			if (state != 'loading') {
+			if (state !== 'loading') {
 				ctx.clearRect(0, 0, cvsw, cvsh);
 				play();
 			} else {
@@ -327,6 +327,7 @@
 		},
 
 		reset = function (data) {
+			var i, l, chan;
 			chans = [];
 			frame = 0;
 			loady = 0;
@@ -334,15 +335,15 @@
 			bpm = data.bpm || 128;
 			samples_per_tick = (opts.srate * 60) / (bpm * ticks_per_beat);
 			ms_per_tick = (1000 * 60) / (bpm * ticks_per_beat);
-			console.log('bpm: ' + bpm + ', samples_per_tick: ' + samples_per_tick + ', ms_per_tick: ' + ms_per_tick);
+//			console.log('bpm: ' + bpm + ', samples_per_tick: ' + samples_per_tick + ', ms_per_tick: ' + ms_per_tick);
 
 			if (!data || !data.chans) {
 				return;
 			}
-			for (var i = 0, l = data.chans.length, chan; i < l; i++) {
+			for (i = 0, l = data.chans.length; i < l; i++) {
 				chan = data.chans[i];
-				console.log(i + ': ' + chan.sound + '- ' + chan.pat);
-				console.log(chan);
+//				console.log(i + ': ' + chan.sound + '- ' + chan.pat);
+//				console.log(chan);
 				chans.push({
 					index: i,
 					loading: true,
@@ -368,14 +369,14 @@
 
 		// ------------------------------------------------------------
 		// Verify browser support for the needed audio framework.
-		if (typeof AudioContext == 'function') {
+		if (typeof AudioContext !== 'undefined') {
 			actx = new AudioContext();
-		} else if (typeof webkitAudioContext == 'function') {
+		} else if (typeof webkitAudioContext !== 'undefined') {
 			actx = new webkitAudioContext();
 		}
 
 		if (!actx) {
-			alert('You need Chrome for audio playback.');
+			alert('You need Google Chrome (or a recent Webkit nightly with Web Audio enabled) for audio playback.');
 			return;
 		}
 
@@ -385,7 +386,7 @@
 		master.connect(actx.destination);
 
 		if (actx.createDynamicsCompressor) {
-			console.log('COMPRESSOR');
+//			console.log('COMPRESSOR');
 			compressor = actx.createDynamicsCompressor();
 			compressor.connect(master);
 		} else {

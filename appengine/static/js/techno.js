@@ -1,8 +1,8 @@
-/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4 */
-/*global jQuery, setTimeout, TECHNO */
-"use strict";
+/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4, white: true */
+/*global document, jQuery, setTimeout, TECHNO */
 
 (function ($) {
+	"use strict";
 
 	$.fn.techno = function (options) {
 		if (this.length > 1) {
@@ -20,7 +20,7 @@
 			alt: '#ff0',
 			alt1: '#fe0',
 			alt2: '#f0f',
-			alt3: '#808',
+			alt3: '#808'
 		},
 		opts = $.extend({}, defaults, options),
 		self = this.get(0),
@@ -94,8 +94,8 @@
 		// ----------------------------------------
 		seq_data = null,
 		start_player = function() {
-			console.log('start_player');
-			console.log(seq_data);
+//			console.log('start_player');
+//			console.log(seq_data);
 			$container.addClass('sequencer-ready');
 		},
 
@@ -149,18 +149,18 @@
 						log_msgs(response.txt);
 						nada_count = 0;
 
-						console.log('state: ' + word_state);
-						console.log(response.txt);
+//						console.log('state: ' + word_state);
+//						console.log(response.txt);
 
 						if (response.result) {
 							try {
 								seq_data = $.parseJSON(response.result);
 							} catch (e) {
-								console.log('BAD JSON! ' + response.result);
+//								console.log('BAD JSON! ' + response.result);
 							}
 							state = 'seq-ready';
 							T.print('\n--==~~~~==--', { alt: false });
-							T.print('! finished !', { alt: true })
+							T.print('! finished !', { alt: true });
 							T.print('--==~~~~==--', { alt: false });
 							T.push_event('start_player');
 							T.print('\n\n\n\n\n\n\n');
@@ -170,7 +170,7 @@
 							T.print('--==~~~~==--\n\n', { alt: false });
 							return;
 						}
-					} else if (xhr.status == 304) {
+					} else if (xhr.status === 304) {
 						nada_count += 1;
 						if (nada_count >= 20) {
 							T.print('\ntimed out!\ntry again...\n', { alt: 2 });
@@ -242,11 +242,11 @@
 		keydown = function (event) {
 			var key = event.which;
 
-			if (state != 'input') {
+			if (state !== 'input') {
 				return;
 			}
 
-			if (key === 13 && word != '') {	// Enter.
+			if (key === 13 && word !== '') {	// Enter.
 				// Send word, enter server feedback state.
 				send_word();
 			} else if (key === 8) { // Backspace.
@@ -288,7 +288,7 @@
 		$(document).keydown(keydown);
 		$container.bind('click', function (e) {
 			if ($container.hasClass('sequencer-ready')) {
-				console.log('STARTING SEQUENCER!');
+//				console.log('STARTING SEQUENCER!');
 				e.preventDefault();
 				$container.removeClass('sequencer-ready').addClass('sequencer');
 				state = 'seq';
@@ -304,14 +304,14 @@
 		// Initialise display module.
 		T.display_init(self, opts);
 
-		// Display intro text.
 /*/
 		T.print('0123456789.,');
 		T.print('abcdefghijkl');
 		T.print('mnopqrstuvwx');
 		T.print('yz~<>{!=+-;"');
 		T.print('\'|:%~*€');
-/**/
+*/
+		// Display intro text.
 		T.print('techno', { fat: true, alt: true, pause_kar: true });
 		T.print('is the word!', { alt: true, pause_line: true });
 		T.print('------------');

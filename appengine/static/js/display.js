@@ -1,8 +1,9 @@
-/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4 */
-/*global jQuery, setTimeout, TECHNO, FONT */
-"use strict";
+/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4, white: true */
+/*global jQuery, setTimeout, clearInterval, TECHNO, FONT */
 
 var TECHNO = (function (module, $) {
+	"use strict";
+
 	// ========================================
 	// Module setup.
 	var defaults = {
@@ -70,66 +71,13 @@ var TECHNO = (function (module, $) {
 	alt_clr = function (alt) {
 		var clr = opts.alt,
 		clri;
-		if (typeof alt == "number") {
+		if (typeof alt === "number") {
 			clri = 'alt' + alt;
-			if (clri in opts) {
+			if (opts.hasOwnProperty(clri)) {
 				clr = opts[clri];
 			}
 		}
 		return clr;
-	},
-
-	// ========================================
-	// Initialization.
-	display_resized = function () {
-		// Determine size of canvas.
-		if (!ctx) {
-			return;
-		}
-
-		// Resize canvas to size of parent element.
-		cvsw = container.width();
-		cvsh = container.height();
-
-		cvs.width = cvsw;
-		cvs.height = cvsh;
-
-		ctx.fillStyle = opts.bg;
-		ctx.globalCompositeOperation = 'src-over';
-		ctx.fillRect(0, 0, cvsw, cvsh);
-
-		ctx.fillStyle = opts.fg;
-
-		// Calculate appropriate font scaling to ensure
-		// sufficient characters can be displayed.
-		while (cols * charw_px * (scale_x + 1) < cvsw &&
-			   rows * charh_px * (scale_y + 1) < cvsh) {
-			scale_x++;
-			scale_y++;
-		}
-		charw_px *= scale_x;
-		charh_px *= scale_y;
-		char_inset_px *= scale_x;
-
-		rows = Math.floor(cvsh / charh_px);
-
-		// Calculate horizontal inset for centering.
-		horiz_inset_px = Math.floor((cvsw - (cols * charw_px)) / 2);
-
-		// Re-display last lines of text?
-	},
-	display_init = function (canvas, options) {
-		$.extend(opts, defaults, options);
-
-		cols = opts.chars_wide;
-
-		cvs = canvas;
-		ctx = canvas.getContext('2d');
-		container = $(cvs).parent();
-
-		display_resized();
-
-		font_cfg.rect = rect_deferred;
 	},
 
 	calc_px_pos = function () {
@@ -205,9 +153,9 @@ var TECHNO = (function (module, $) {
 				maxsleep = minsleep = 1;
 			} else if (cmd.cmd === 'c') {
 				clear_line();
-			} else if (cmd.cmd === 't') {
+			} /* else if (cmd.cmd === 't') {
 				// Intentionally empty: event triggers are sent via last cmd.
-			}
+			} */
 			last_cmd = cmd;
 		} else if (!last_cmd && cur >= 0){
 			maxsleep = opts.cur_ms;
@@ -260,7 +208,7 @@ var TECHNO = (function (module, $) {
 	},
 	do_scroll = function (pixels, o) {
 		var shift = charh_px >> 1;
-		if (o && 'immediate' in o && o.immediate) {
+		if (o && o.immediate) {
 			scroll_now(pixels);
 		} else {
 			while (pixels > 0) {
@@ -274,8 +222,8 @@ var TECHNO = (function (module, $) {
 		}
 	},
 	do_event = function (type, o) {
-		var params = (o && 'params' in o) ? o.params : [];
-		if (o && 'immediate' in o && o.immediate) {
+		var params = (o && o.params) ? o.params : [];
+		if (o && o.immediate) {
 			$(cvs).trigger(type || 'display', params);
 		} else {
 			cmd_queue.push({
@@ -287,7 +235,7 @@ var TECHNO = (function (module, $) {
 		}
 	},
 	do_clear = function (o) {
-		if (o && 'immediate' in o && o.immediate) {
+		if (o && o.immediate) {
 			clear_line();
 		} else {
 			cmd_queue.push({
@@ -298,15 +246,69 @@ var TECHNO = (function (module, $) {
 	},
 
 	// ========================================
+	// Initialization.
+	display_resized = function () {
+		// Determine size of canvas.
+		if (!ctx) {
+			return;
+		}
+
+		// Resize canvas to size of parent element.
+		cvsw = container.width();
+		cvsh = container.height();
+
+		cvs.width = cvsw;
+		cvs.height = cvsh;
+
+		ctx.fillStyle = opts.bg;
+		ctx.globalCompositeOperation = 'src-over';
+		ctx.fillRect(0, 0, cvsw, cvsh);
+
+		ctx.fillStyle = opts.fg;
+
+		// Calculate appropriate font scaling to ensure
+		// sufficient characters can be displayed.
+		while (cols * charw_px * (scale_x + 1) < cvsw &&
+			   rows * charh_px * (scale_y + 1) < cvsh) {
+			scale_x++;
+			scale_y++;
+		}
+		charw_px *= scale_x;
+		charh_px *= scale_y;
+		char_inset_px *= scale_x;
+
+		rows = Math.floor(cvsh / charh_px);
+
+		// Calculate horizontal inset for centering.
+		horiz_inset_px = Math.floor((cvsw - (cols * charw_px)) / 2);
+
+		// Re-display last lines of text?
+	},
+	display_init = function (canvas, options) {
+		$.extend(opts, defaults, options);
+
+		cols = opts.chars_wide;
+
+		cvs = canvas;
+		ctx = canvas.getContext('2d');
+		container = $(cvs).parent();
+
+		display_resized();
+
+		font_cfg.rect = rect_deferred;
+	},
+
+	// ========================================
+	// Display interaction methods.
 	scroll = function (rows, o) {
 		rows = rows || 1;
 		do_scroll(rows * charh_px, o);
 	},
 
 	newline = function (o) {
-		var offset = (o && 'fat' in o && o.fat) ? 2 : 1,
-		pauseline = o && 'pause_line' in o && o.pause_line,
-		immed = o && 'immediate' in o && o.immediate;
+		var offset = (o && o.fat) ? 2 : 1,
+		pauseline = o && o.pause_line,
+		immed = o && o.immediate;
 
 		cy += offset;
 		cx = 0;
@@ -326,16 +328,16 @@ var TECHNO = (function (module, $) {
 		event, immed, cr, clr, cursor;
 
 		if (o) {
-			fat = 'fat' in o && o.fat;
-			alt = 'alt' in o && o.alt;
-			pausekar = 'pause_kar' in o && o.pause_kar;
-			pauseline = 'pause_line' in o && o.pause_line;
-			runon = 'runon' in o && o.runon;
-			event = 'event' in o && o.event;
-			immed = 'immediate' in o && o.immediate;
-			cr = 'carriage_return' in o && o.carriage_return;
-			clr = 'clear_line' in o && o.clear_line;
-			cursor = 'cursor' in o && o.cursor;
+			fat = o.fat;
+			alt = o.alt;
+			pausekar = o.pause_kar;
+			pauseline = o.pause_line;
+			runon = o.runon;
+			event = o.event;
+			immed = o.immediate;
+			cr = o.carriage_return;
+			clr = o.clear_line;
+			cursor = o.cursor;
 		}
 
 		if (fat) {
@@ -346,7 +348,7 @@ var TECHNO = (function (module, $) {
 		}
 
 		if (alt) {
-			alt_colour = (typeof o.alt == 'number') ? o.alt : true;
+			alt_colour = (typeof o.alt === 'number') ? o.alt : true;
 		} else {
 			alt_colour = false;
 		}
@@ -375,7 +377,7 @@ var TECHNO = (function (module, $) {
 		for(i = 0, l = msg ? msg.length : 0; i < l; ++i) {
 			kar = msg[i];
 
-			if (kar != ' ' && kar != '\n') {
+			if (kar !== ' ' && kar !== '\n') {
 				FONT.render(font_cfg, 0, 0, kar);
 				if (pausekar && !immed) {
 					do_pause();
@@ -383,7 +385,7 @@ var TECHNO = (function (module, $) {
 			}
 
 			// Update cursor position.
-			if (kar == '\n') {
+			if (kar === '\n') {
 				newline(o);
 			} else {
 				++cx;
@@ -396,7 +398,7 @@ var TECHNO = (function (module, $) {
 		if (immed) {
 			font_cfg.rect = rect_deferred;
 		}
-		if (!runon && kar != '\n') {
+		if (!runon && kar !== '\n') {
 			newline(o);
 		}
 		if (alt) {

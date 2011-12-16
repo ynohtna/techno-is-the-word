@@ -1,6 +1,5 @@
-/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4 */
+/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4, white: true */
 /*global FONT, jQuery */
-"use strict";
 
 /*
   FONT methods require a configuration structure (cfg) with the following members:
@@ -20,6 +19,8 @@
 */
 
 var FONT = (function (module, $) {
+	"use strict";
+
 	var glyphs = {
 		'~': '~',
 		'<': '<',
@@ -371,15 +372,16 @@ var FONT = (function (module, $) {
 		rc = cfg.rect;
 		cfg.rect = function (x, y, w, h) {
 			r.push(x, y, w, h);
-		}
+		};
 		if (centred) {
 			renderCentred(cfg, x, y, text);
 		} else {
 			render(cfg, x, y, text);
 		}
 		cfg.rect = rc;
-		return function (x, y, fn, self, i, l) {
-			for (i = 0, l = r.length - 3; i < l;) {
+		return function (x, y, fn, self) {
+			var i = 0, l = r.length - 3;
+			while (i < l) {
 				fn.call(self, x + r[i++], y + r[i++], r[i++], r[i++]);
 			}
 		};

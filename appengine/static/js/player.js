@@ -1,8 +1,8 @@
-/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4 */
-/*global jQuery, setTimeout */
-"use strict";
+/*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4, white: true */
+/*global jQuery, setTimeout, document, alert */
 
 (function ($) {
+	"use strict";
 
 	$.fn.player = function (options) {
 		if (this.length > 1) {
@@ -34,7 +34,7 @@
 		play = function (e) {
 			if (!playing && src) {
 				$player.attr('src', src);
-				console.log('PLAYING! ' + src);
+//				console.log('PLAYING! ' + src);
 				player.play();
 				playing = 1;
 			}
@@ -44,7 +44,7 @@
 		},
 		stop = function (e) {
 			if (playing) {
-				console.log('STOPPING!');
+//				console.log('STOPPING!');
 				playing = 0;
 				player.pause();
 			}
@@ -57,7 +57,7 @@
 		// Verify browser support for the needed audio format.
 		if (!player || !player.canPlayType) {
 			alert('Sorry, your browser does not support the HTML5 audio element.');
-		} else if (player.canPlayType(opts.mime_needed) == "") {
+		} else if (player.canPlayType(opts.mime_needed) === "") {
 			alert('Sorry, your browser does not support our required audio formats.');
 		}
 
