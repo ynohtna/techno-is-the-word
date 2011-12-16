@@ -1,5 +1,5 @@
 /*jslint bitwise: true, regexp: true, sloppy: false, sub: false, vars: false, plusplus: true, maxerr: 50, indent: 4, white: true */
-/*global document, jQuery, setTimeout, TECHNO */
+/*global document, window, jQuery, setTimeout, TECHNO */
 
 (function ($) {
 	"use strict";
@@ -29,7 +29,8 @@
 		container = $self.parent(),
 		$container = $(container),
 
-		word ='',
+		from_loc = false,
+		word = '',
 		word_state = -1,
 		state = 'intro',
 		nada_count = 0,
@@ -54,6 +55,40 @@
 			clear_line: true,
 			runon: true,
 			immediate: true
+		},
+
+		// ----------------------------------------
+		bad_kar_re = /[^a-zA-Z =:.,!-]/g,
+
+		loc2word = function () {
+			var w = window.location.hash;
+			if (!w) {
+				return null;
+			}
+
+			// Replace pluses with spaces and downcase all characters.
+			w = w.replace(/\+/g, ' ').toLowerCase();
+
+			// Strip out unrecognised punctuation (includes preceding hash symbol).
+			w = w.replace(bad_kar_re, '');
+
+			return w;
+		},
+
+		word2loc = function () {
+			var w = word;
+			if (!w) {
+				window.location.hash = '';
+				return;
+			}
+
+			// Strip out unrecognised punctuation.
+			w = w.replace(bad_kar_re, '');
+
+			// Replace spaces with pluses and downcase all letters.
+			w = w.replace(/ /g, '+').toLowerCase();
+
+			window.location.hash = w;
 		},
 
 		// ----------------------------------------
@@ -213,11 +248,14 @@
 						word = response.word || 'techno';
 						word_state = response.state || 0;
 						T.print(word, { carriage_return: true,
-										alt: true,
+										alt: from_loc ? 1 : true,
 										clear_line: true,
-										immediate: true
+										immediate: from_loc ? false : true,
+										pause_kar: from_loc,
+										pause_line: from_loc
 									  });
 
+						word2loc();
 						log_msgs(response.txt);
 					}
 
@@ -271,7 +309,9 @@
 		},
 
 		start_input = function () {
+			from_loc = false;
 			word = '';
+			word2loc();
 			word_state = -1;
 			state = 'input';
 			T.show_cursor(true);
@@ -283,6 +323,7 @@
 		});
 		$self.bind('start_polling', start_polling);
 		$self.bind('start_player', start_player);
+		$self.bind('send_word', send_word);
 
 		// Capture keyboard input.
 		$(document).keydown(keydown);
@@ -317,7 +358,14 @@
 		T.print('------------');
 /**/
 		T.newline();
-		T.print('word:', { event: 'display', params: 'start_input' });
+
+		word = loc2word() || '';
+		if (word !== '') {
+			from_loc = true;
+			T.print('you say:', { event: 'send_word' });
+		} else {
+			T.print('word:', { event: 'display', params: 'start_input' });
+		}
 
 		return self;
 	};
