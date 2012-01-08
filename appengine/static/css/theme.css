@@ -74,3 +74,15 @@ footer {
 .sequencer #canvasSeq {
 	display: block;
 }
+
+.addthis_toolbox {
+	position: absolute;
+	width: 120px;
+	right: 0;
+	bottom: 0;
+}
+
+#at20mc a,
+.addthis_toolbox a {
+	border-bottom: none;
+}
