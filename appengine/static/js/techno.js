@@ -38,6 +38,9 @@
 		T = TECHNO,
 		S = opts.seq,
 
+		inhibit_input = false,
+		addthis_toolbox = $('.addthis_toolbox'),
+
 		// ----------------------------------------
 		punctuation_lookup = ':=,-.',
 		input_opts = {
@@ -61,7 +64,9 @@
 		bad_kar_re = /[^a-zA-Z =:.,!-]/g,
 
 		loc2word = function () {
-			var w = window.location.hash;
+			// Can't read window.location.hash directly due to Firefox's double
+			// entity decoding bug.
+			var w = window.location.href.split("#")[1];
 			if (!w) {
 				return null;
 			}
@@ -75,10 +80,28 @@
 			return w;
 		},
 
+		update_addthis = function (word, urlsafe_word) {
+			var url = window.location.origin,
+			title = 'Techno Is The Word!';
+			if (!addthis_toolbox) {
+				return;
+			}
+			if (word) {
+				url += '/word/' + urlsafe_word;
+				title += ' (As is "' + word + '")';
+			}
+			console.log('addthis: ' + url);
+			addthis_toolbox.attr('addthis:url', url).attr('addthis:title', title);
+			if (window.addthis) {
+				addthis.toolbox('.addthis_toolbox');
+			}
+		},
+
 		word2loc = function () {
 			var w = word;
 			if (!w) {
 				window.location.hash = '';
+				update_addthis();
 				return;
 			}
 
@@ -89,6 +112,7 @@
 			w = w.replace(/ /g, '+').toLowerCase();
 
 			window.location.hash = w;
+			update_addthis(word, w);
 		},
 
 		// ----------------------------------------
@@ -280,7 +304,7 @@
 		keydown = function (event) {
 			var key = event.which;
 
-			if (state !== 'input') {
+			if (state !== 'input' || inhibit_input) {
 				return;
 			}
 
@@ -342,6 +366,16 @@
 			}
 		});
 
+		if (window.addthis) {
+			// Ensure keyboard events are not captured when the AddThis widget is open.
+			addthis.addEventListener('addthis.menu.open', function () {
+				inhibit_input = true;
+			});
+			addthis.addEventListener('addthis.menu.close', function () {
+				inhibit_input = false;
+			});
+		}
+
 		// Initialise display module.
 		T.display_init(self, opts);
 
@@ -361,6 +395,7 @@
 
 		word = loc2word() || '';
 		if (word !== '') {
+			word2loc();
 			from_loc = true;
 			T.print('you say:', { event: 'send_word' });
 		} else {
