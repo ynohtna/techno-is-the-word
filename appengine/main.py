@@ -25,10 +25,20 @@ class serveSample(view.Handler, blobstore_handlers.BlobstoreDownloadHandler):
             return self.response.set_status(404)
 
 
+class redirectWord(webapp.RequestHandler):
+    def get(self, word = None):
+        if word:
+            self.redirect('/#' + word)
+        else:
+            self.redirect('/')
+
+
+# ============================================================
 routes = [
         (r'/status/(.*)', status.Status),
         (r'/result/(.*)', result.Result),
         (r'/sample/(.*)', serveSample),
+        (r'/word/(.*)', redirectWord),
         (r'/.*', home.HomePage)
     ]
 
