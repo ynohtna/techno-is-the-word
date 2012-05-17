@@ -1,6 +1,6 @@
 import os
 
-application_id = os.environ.get('APPLICATION_ID', 'sampleism')
+application_id = os.environ.get('APPLICATION_ID', 'techno-is-the-word')
 full_version_id = os.environ.get('CURRENT_VERSION_ID', '0')
 version_id = full_version_id.split('.')[0]
 on_dev = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
