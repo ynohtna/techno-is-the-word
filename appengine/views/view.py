@@ -65,7 +65,7 @@ class Handler(webapp.RequestHandler):
         values = {
             'settings': config.SETTINGS,
             'app_id': config.SETTINGS['APP_ID'],
-            'version_id': config.SETTINGS['APP_VERSION_ID'],
+            'version_id': config.SETTINGS['APP_FULL_VERSION_ID'],
             'on_dev': config.SETTINGS['ON_DEV'],
 
             'now': datetime.datetime.utcnow().strftime('%Y%m%s%H%M%S'),

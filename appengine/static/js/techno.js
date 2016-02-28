@@ -34,12 +34,12 @@
 		word_state = -1,
 		state = 'intro',
 		nada_count = 0,
+        oldhash = window.location.hash,
 
 		T = TECHNO,
 		S = opts.seq,
 
 		inhibit_input = false,
-		addthis_toolbox = $('.addthis_toolbox'),
 
 		// ----------------------------------------
 		punctuation_lookup = ':=,-.',
@@ -80,29 +80,10 @@
 			return w;
 		},
 
-		update_addthis = function (word, urlsafe_word) {
-			var url = window.location.origin,
-			title = 'Techno Is The Word!';
-			if (!addthis_toolbox) {
-				return;
-			}
-			if (word) {
-				url += '/word/' + urlsafe_word;
-				title += ' (As is "' + word + '")';
-			}
-			console.log('addthis: ' + url);
-			addthis_toolbox.attr('addthis:url', url).attr('addthis:title', title);
-			if (window.addthis) {
-				addthis.toolbox('.addthis_toolbox');
-			}
-		},
-
 		word2loc = function () {
 			var w = word;
 			if (!w) {
-				window.location.hash = '';
-				update_addthis();
-				return;
+			  return;
 			}
 
 			// Strip out unrecognised punctuation.
@@ -111,8 +92,8 @@
 			// Replace spaces with pluses and downcase all letters.
 			w = w.replace(/ /g, '+').toLowerCase();
 
-			window.location.hash = w;
-			update_addthis(word, w);
+			window.location.hash = oldhash = w;
+            document.title = 'Techno Is The Word! (also: ' + w + ')';
 		},
 
 		// ----------------------------------------
@@ -223,10 +204,10 @@
 							T.print('--==~~~~==--', { alt: false });
 							T.push_event('start_player');
 							T.print('\n\n\n\n\n\n\n');
-							T.print('\n--==~~~~==--', { alt: false });
-							T.print('  click to', { alt: true });
-							T.print('    play', { alt: true });
-							T.print('--==~~~~==--\n\n', { alt: false });
+							T.print('\n -==~~~~==-\n\n', { alt: false });
+							T.print('  click or', { alt: true });
+							T.print(' push space\n\n', { alt: true });
+							T.print(' -==~~~~==-\n', { alt: false });
 							return;
 						}
 					} else if (xhr.status === 304) {
@@ -301,8 +282,35 @@
 			T.print(slice, input_opts);
 		},
 
+          start_seq = function () {
+			if ($container.hasClass('sequencer-ready')) {
+			  $container.removeClass('sequencer-ready').addClass('sequencer');
+			  state = 'seq';
+			  S.reset(seq_data);
+            }
+          },
+          stop_seq = function () {
+		    if ($container.hasClass('sequencer')) {
+			  S.stop();
+			  $container.removeClass('sequencer');
+			  T.print('\n   thanks\n   for da\n    beat\n    bro!\n\n\n');
+			  T.print('word:', { event: 'display', params: 'start_input' });
+            }
+		  },
+
 		keydown = function (event) {
-			var key = event.which;
+		  var key = event.which;
+
+          if (key === 32 && state == 'seq-ready') {
+            start_seq();
+		    event.preventDefault();
+            return;
+          }
+          if (key === 32 && state == 'seq') {
+            stop_seq();
+		    event.preventDefault();
+            return;
+          }
 
 			if (state !== 'input' || inhibit_input) {
 				return;
@@ -352,55 +360,56 @@
 		// Capture keyboard input.
 		$(document).keydown(keydown);
 		$container.bind('click', function (e) {
+		  e.preventDefault();
 			if ($container.hasClass('sequencer-ready')) {
 //				console.log('STARTING SEQUENCER!');
-				e.preventDefault();
-				$container.removeClass('sequencer-ready').addClass('sequencer');
-				state = 'seq';
-				S.reset(seq_data);
+              start_seq();
 			} else if ($container.hasClass('sequencer')) {
-				S.stop();
-				$container.removeClass('sequencer');
-				T.print('\n   thanks\n   for da\n    beat\n    bro!\n\n\n');
-				T.print('word:', { event: 'display', params: 'start_input' });
+              stop_seq();
 			}
 		});
-
-		if (window.addthis) {
-			// Ensure keyboard events are not captured when the AddThis widget is open.
-			addthis.addEventListener('addthis.menu.open', function () {
-				inhibit_input = true;
-			});
-			addthis.addEventListener('addthis.menu.close', function () {
-				inhibit_input = false;
-			});
-		}
 
 		// Initialise display module.
 		T.display_init(self, opts);
 
-/*/
-		T.print('0123456789.,');
-		T.print('abcdefghijkl');
-		T.print('mnopqrstuvwx');
-		T.print('yz~<>{!=+-;"');
-		T.print('\'|:%~*€');
-*/
+//		T.print('0123456789.,');
+//		T.print('abcdefghijkl');
+//		T.print('mnopqrstuvwx');
+//		T.print('yz~<>{!=+-;"');
+//		T.print('\'|:%~*€');
+
+	  word = loc2word() || '';
+	  if (word !== '') {
+		word2loc();
+		from_loc = true;
+        oldhash = window.location.hash;
+      }
+
 		// Display intro text.
-		T.print('techno', { fat: true, alt: true, pause_kar: true });
+		T.print('techno', { fat: true, alt: true, pause_kar: !from_loc });
 		T.print('is the word!', { alt: true, pause_line: true });
 		T.print('------------');
 /**/
 		T.newline();
 
-		word = loc2word() || '';
-		if (word !== '') {
-			word2loc();
-			from_loc = true;
-			T.print('you say:', { event: 'send_word' });
+      if (from_loc) {
+		T.print('you say:', { event: 'send_word' });
 		} else {
 			T.print('word:', { event: 'display', params: 'start_input' });
 		}
+
+      var checkhash = function () {
+        var h = window.location.hash;
+        if ((h != oldhash) && (h != ('#' + oldhash))) {
+          window.location.reload();
+        }
+      };
+      if ("onhashchange" in window) {
+        window.onhashchange = checkhash;
+      }
+      if ("onpopstate" in window) {
+        window.onpopstate = checkhash;
+      }
 
 		return self;
 	};

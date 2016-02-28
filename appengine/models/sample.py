@@ -26,11 +26,16 @@ class Sample(db.Model):
         return cls(rnd = random(), *args, **kwargs)
 
     @classmethod
-    def choose_random(cls, type, rnd):
+    def choose_random(cls, type, rnd, rng):
         '''rnd is [0..1]'''
         s = Sample.all().order('rnd').filter('rnd >=', rnd).get()
         if s == None:
-            s = Sample.all().order('rnd').filter('rnd <', rnd).get()
+            i = 10
+            while i > 0 and s == None:
+                if rng:
+                    r = rng.random()
+                s = Sample.all().order('rnd').filter('rnd <', r).get()
+                i = i + 1
         return s
 
     def serve_url(self):

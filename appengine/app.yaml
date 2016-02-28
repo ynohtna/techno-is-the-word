@@ -1,5 +1,5 @@
 application: techno-is-the-word
-version: 5-live
+version: 6-live
 runtime: python27
 api_version: 1
 threadsafe: false
@@ -36,7 +36,7 @@ skip_files:
 
 builtins:
 - admin_redirect: on
-- datastore_admin: on
+#- datastore_admin: on
 - deferred: on
 
 inbound_services:

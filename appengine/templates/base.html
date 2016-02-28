@@ -46,36 +46,6 @@ An <a href="http://lowbroweye.com">Anthony Bowyer-Lowe</a>
 / <a href="http://lowbroweye.com">Low Brow Eye</a>
 hack @ Music Hack Day London, 2011.
 {% endblock %}
-{% block addthis %}
-<script>
-var addthis_config = {
-  data_track_clickback: false,
-  ui_508_compliant: true
-},
-addthis_share = {
-  url_transforms: {
-	clean: true,
-	shorten: {
-	  twitter: 'bitly'
-	}
-  },
-  shorteners: {
-    bitly: {
-      username: 'yoknapatawpha',
-	  apiKey: 'R_a215e07953e02fa887eb72fd0891ad41'
-    }
-  }
-};
-</script>
-<div class="addthis_toolbox addthis_default_style">
-  <a class="addthis_button_facebook"></a>
-  <a class="addthis_button_twitter"></a>
-  <a class="addthis_button_tumblr"></a>
-  <a class="addthis_button_google_plusone" g:plusone:count="false"></a>
-  <a class="addthis_button_compact"></a>
-</div>
-<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4f09d99d7de844f0"></script>
-{% endblock %}
 </footer>
 
 {% block footerScript %}{% endblock %}

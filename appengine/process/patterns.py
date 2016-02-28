@@ -141,7 +141,7 @@ def coalesce_and_choose_sounds(w, state):
     w.set('chan0', kick)
 
     from models.sample import Sample
-    ks = Sample.choose_random('bd', rng.random())
+    ks = Sample.choose_random('bd', rng.random(), rng)
     chans.append({
             'bus': 'bd',
             'label': 'bd',
@@ -158,7 +158,7 @@ def coalesce_and_choose_sounds(w, state):
     sn = w.get('sn_pat')
     w.set('chan1', sn)
 
-    ss = Sample.choose_random('sn', rng.random())
+    ss = Sample.choose_random('sn', rng.random(), rng)
     chans.append({
             'bus': 'sn',
             'label': 'sn',
